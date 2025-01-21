@@ -55,13 +55,9 @@ cmake-build-*/
 
 # IntelliJ
 out/
-native/
-caches/
-daemon/
 build/
 .gradle/
 ~/.gradle/
-.caches/
 .gradle/caches/
 .gradle/daemon/
 .gradle/native/
