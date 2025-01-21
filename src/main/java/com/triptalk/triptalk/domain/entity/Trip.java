@@ -1,0 +1,63 @@
+package com.triptalk.triptalk.domain.entity;
+
+import com.triptalk.triptalk.domain.enums.Visibility;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static jakarta.persistence.GenerationType.*;
+
+@Entity
+@Table(name = "trips")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Trip {
+
+  @Id
+  @GeneratedValue(strategy = IDENTITY)
+  @Column(name = "id")
+  private Long id;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "creator_id", nullable = false)
+  private User creator;
+
+  @Column(name = "title", nullable = false, length = 255)
+  private String title;
+
+  @Column(name = "start_date", nullable = false)
+  private LocalDate startDate;
+
+  @Column(name = "end_date", nullable = false)
+  private LocalDate endDate;
+
+  @Column(name = "location", nullable = false, length = 255)
+  private String location;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "visibility", nullable = false, length=20)
+  private Visibility visibility;
+
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
+
+  @Column(name = "updated_at")
+  private LocalDateTime updatedAt;
+
+  @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<TripUser> planMembers = new ArrayList<>();
+
+  @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Schedule> schedules = new ArrayList<>();
+
+  @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Invitation> invitations = new ArrayList<>();
+
+}
