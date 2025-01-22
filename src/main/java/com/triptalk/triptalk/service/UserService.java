@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface UserService extends UserDetailsService {
   UserDto createUser(UserDto userDto);
-  UserDto getUserByUserId(Long id);
+  UserDataDto getUserByUserId(Long id);
   String deleteUser(String token);
   List<UserDataDto> getAllUser();
   String updateUserNickname(Long targetUserId, String targetNickname);

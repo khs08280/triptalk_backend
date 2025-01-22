@@ -93,10 +93,10 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public UserDto getUserByUserId(Long id) {
+  public UserDataDto getUserByUserId(Long id) {
     User user = userRepository.findById(id)
             .orElseThrow(() -> new UsernameNotFoundException("일치하는 유저를 찾지 못했습니다."));
-    return UserDto.fromEntity(user);
+    return UserDataDto.fromEntity(user);
   }
 
   @Override
