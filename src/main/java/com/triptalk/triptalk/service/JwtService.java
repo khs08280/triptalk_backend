@@ -22,14 +22,18 @@ public class JwtService {
   private String SECRET_KEY;
 
   @Value("${jwt.expiration}")
-  private String EXPIRATION_TIME;
+  private Long EXPIRATION_TIME;
 
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
   }
 
   public Date extractExpiration(String token) {
-    return extractClaim(token, Claims::getExpiration);
+    Date expiration = extractClaim(token, Claims::getExpiration);
+    if (expiration == null) {
+      throw new IllegalArgumentException("Expiration time is missing in the token.");
+    }
+    return expiration;
   }
 
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -38,19 +42,27 @@ public class JwtService {
   }
 
   private Claims extractAllClaims(String token) {
-    return Jwts
-            .parserBuilder()
-            .setSigningKey(getSignKey())
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
+    try {
+      return Jwts
+              .parserBuilder()
+              .setSigningKey(getSignKey())
+              .build()
+              .parseClaimsJws(token)
+              .getBody();
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid JWT token.", e);
+    }
   }
 
   private Boolean isTokenExpired(String token) {
     return extractExpiration(token).before(new Date());
   }
 
+
   public String generateToken(String userName) {
+    if (EXPIRATION_TIME == null || EXPIRATION_TIME <= 0) {
+      throw new IllegalArgumentException("Expiration time is not set correctly.");
+    }
     Map<String, Object> claims = new HashMap<>();
     return createToken(claims, userName);
   }
@@ -64,17 +76,20 @@ public class JwtService {
             .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
   }
 
-  public Boolean validateToken(String token, UserDetails userDetails) {
-    final String username = extractUsername(token);
-    return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-  }
-
-  public boolean isTokenValid(String token, UserDetails userDetails) {
-    final String username = extractUsername(token);
-    return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+  public Boolean isTokenValid(String token, UserDetails userDetails) {
+    try {
+      final String username = extractUsername(token);
+      return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    } catch (Exception e) {
+      // 토큰이 잘못된 경우 예외 처리
+      return false;
+    }
   }
 
   private Key getSignKey() {
+    if (SECRET_KEY == null || SECRET_KEY.isEmpty()) {
+      throw new IllegalArgumentException("JWT secret key is not configured.");
+    }
     byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
     return Keys.hmacShaKeyFor(keyBytes);
   }

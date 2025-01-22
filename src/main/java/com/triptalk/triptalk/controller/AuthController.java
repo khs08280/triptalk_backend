@@ -4,22 +4,23 @@ import com.triptalk.triptalk.dto.AuthRequestDto;
 import com.triptalk.triptalk.dto.UserDto;
 import com.triptalk.triptalk.service.JwtService;
 import com.triptalk.triptalk.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
+@Slf4j
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -27,8 +28,8 @@ public class AuthController {
   private final AuthenticationManager authenticationManager;
   private final JwtService jwtService;
 
-  @PostMapping("/join")
-  public ResponseEntity<?> join(@RequestBody @Valid UserDto userDto) {
+  @PostMapping("/signup")
+  public ResponseEntity<?> signUp(@RequestBody @Valid UserDto userDto) {
     try {
       UserDto createdUser = userService.createUser(userDto);
       return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
@@ -37,7 +38,7 @@ public class AuthController {
     }
   }
 
-  @PostMapping("login")
+  @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody @Valid AuthRequestDto authRequestDto){
     try {
       Authentication authentication = authenticationManager.authenticate(
@@ -55,4 +56,5 @@ public class AuthController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("무효한 권한");
     }
   }
+
 }

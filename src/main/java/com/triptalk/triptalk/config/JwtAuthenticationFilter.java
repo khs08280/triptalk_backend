@@ -32,6 +32,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     final String jwtToken;
     final String username;
 
+    String requestPath = request.getServletPath();
+    if (requestPath.startsWith("/api/v1/auth")) {
+      // 로그인이나 회원가입 등 인증이 필요 없는 경로는 필터를 건너뛴다.
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     // 1. Authorization 헤더가 없거나 Bearer 토큰 형식이 아닌 경우, 필터를 통과시킴
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       filterChain.doFilter(request, response);
