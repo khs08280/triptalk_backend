@@ -1,8 +1,11 @@
 package com.triptalk.triptalk.domain.entity;
 
 import com.triptalk.triptalk.domain.enums.Visibility;
+import com.triptalk.triptalk.dto.requestDto.TripRequestDto;
+import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +19,7 @@ import static jakarta.persistence.GenerationType.*;
 @Entity
 @Table(name = "trips")
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Trip {
@@ -52,7 +56,7 @@ public class Trip {
   private LocalDateTime updatedAt;
 
   @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<TripUser> planMembers = new ArrayList<>();
+  private List<TripUser> tripUsers = new ArrayList<>();
 
   @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Schedule> schedules = new ArrayList<>();
@@ -60,4 +64,12 @@ public class Trip {
   @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Invitation> invitations = new ArrayList<>();
 
+  public void update(TripRequestDto requestDto) {
+    this.title = requestDto.getTitle();
+    this.location = requestDto.getLocation();
+    this.startDate = requestDto.getStartDate();
+    this.endDate = requestDto.getEndDate();
+    this.visibility = requestDto.getVisibility();
+    this.updatedAt = LocalDateTime.now();
+  }
 }

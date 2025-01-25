@@ -1,0 +1,58 @@
+package com.triptalk.triptalk.exception;
+
+import com.triptalk.triptalk.dto.responseDto.ApiResponse;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+  // 404 Not Found
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<ApiResponse<?>> handleEntityNotFoundException(EntityNotFoundException e) {
+    log.error("해당 정보를 찾을 수 없습니다. : {}", e.getMessage(), e);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ApiResponse.error(e.getMessage()));
+  }
+
+  // 400 Bad Request
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException e) {
+    log.error("잘못된 요청 : {}", e.getMessage(), e);
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(e.getMessage()));
+  }
+
+  // 403 Forbidden
+  @ExceptionHandler(SecurityException.class)
+  public ResponseEntity<ApiResponse<?>> handleSecurityException(SecurityException e) {
+    log.error("권한이 없음 : {}", e.getMessage(), e);
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ApiResponse.error(e.getMessage()));
+  }
+
+  @ExceptionHandler(UsernameNotFoundException.class)
+  public ResponseEntity<ApiResponse<?>> handleUsernameNotFoundException(UsernameNotFoundException e) {
+    log.error("해당 사용자 이름과 일치하는 유저를 찾지 못했습니다. : {}", e.getMessage(), e);
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ApiResponse.error(e.getMessage()));
+  }
+
+  // 500 Internal Server Error (기타 모든 예외)
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiResponse<?>> handleGeneralException(Exception e) {
+    log.error("예상치 못한 예외 발생 : {}", e.getMessage(), e);
+
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiResponse.error("서버에서 오류가 발생했습니다."));
+  }
+}

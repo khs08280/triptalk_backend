@@ -1,7 +1,10 @@
 package com.triptalk.triptalk.controller;
 
 import com.triptalk.triptalk.domain.entity.User;
-import com.triptalk.triptalk.dto.*;
+import com.triptalk.triptalk.dto.requestDto.NicknameRequestDto;
+import com.triptalk.triptalk.dto.requestDto.ProfileRequestDto;
+import com.triptalk.triptalk.dto.responseDto.ApiResponse;
+import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,23 +55,23 @@ public class UserController {
   }
 
   @GetMapping
-  public ResponseEntity<ApiResponse<List<UserDataDto>>> getAllUser() {
-    List<UserDataDto> allUser = userService.getAllUser();
+  public ResponseEntity<ApiResponse<List<UserResponseDto>>> getAllUser() {
+    List<UserResponseDto> allUser = userService.getAllUserList();
     return ResponseEntity.ok(ApiResponse.success("모든 사용자 조회 성공", allUser));
   }
 
   @GetMapping("/me")
-  public ResponseEntity<ApiResponse<UserDataDto>> getMyInfo(Authentication authentication) {
+  public ResponseEntity<ApiResponse<UserResponseDto>> getMyInfo(Authentication authentication) {
     Long userId = ((User) authentication.getPrincipal()).getId();
-    UserDataDto user = userService.getUserByUserId(userId);
+    UserResponseDto user = userService.getUser(userId);
     return ResponseEntity.ok(ApiResponse.success("내 정보 조회 성공", user));
   }
 
   @PatchMapping("/me/nickname")
-  public ResponseEntity<ApiResponse<String>> updateNickname(@RequestBody NicknameDto nicknameDto, Authentication authentication){
+  public ResponseEntity<ApiResponse<String>> updateNickname(@RequestBody NicknameRequestDto nicknameDto, Authentication authentication){
     try {
       Long userId = ((User) authentication.getPrincipal()).getId();
-      String message = userService.updateUserNickname(userId, nicknameDto.getNickname());
+      String message = userService.modifyUserNickname(userId, nicknameDto.getNickname());
       return ResponseEntity.ok(ApiResponse.success(message, null));
     } catch (Exception e) {
       log.error("닉네임 변경 중 예외 발생:", e);
@@ -77,10 +80,10 @@ public class UserController {
   }
 
   @PatchMapping("/me/profileImageUrl")
-  public ResponseEntity<ApiResponse<String>> updateProfileImageUrl(@RequestBody ProfileDto profileDto, Authentication authentication){
+  public ResponseEntity<ApiResponse<String>> updateProfileImageUrl(@RequestBody ProfileRequestDto profileDto, Authentication authentication){
     try {
       Long userId = ((User) authentication.getPrincipal()).getId();
-      String message = userService.updateUserProfileUrl(userId, profileDto.getProfileImageUrl());
+      String message = userService.modifyUserProfileUrl(userId, profileDto.getProfileImageUrl());
       return ResponseEntity.ok(ApiResponse.success(message, null));
     } catch (Exception e) {
       log.error("프로필 사진 변경 중 예외 발생:", e);

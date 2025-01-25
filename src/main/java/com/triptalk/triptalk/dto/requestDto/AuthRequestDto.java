@@ -1,4 +1,4 @@
-package com.triptalk.triptalk.dto;
+package com.triptalk.triptalk.dto.requestDto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

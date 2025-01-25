@@ -1,23 +1,20 @@
 package com.triptalk.triptalk.service;
 
 import com.triptalk.triptalk.domain.entity.User;
-import com.triptalk.triptalk.dto.UserDataDto;
-import com.triptalk.triptalk.dto.UserDto;
+import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
+import com.triptalk.triptalk.dto.requestDto.UserRequestDto;
 import com.triptalk.triptalk.exception.NicknameDuplicationException;
 import com.triptalk.triptalk.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 @Slf4j
 @Service
@@ -29,17 +26,17 @@ public class UserServiceImpl implements UserService {
   private final JwtService jwtService;
 
   @Override
-  public List<UserDataDto> getAllUser() {
+  public List<UserResponseDto> getAllUserList() {
     List<User> allUsers = userRepository.findAll();
 
 
     return allUsers.stream()
-            .map(UserDataDto::fromEntity)
+            .map(UserResponseDto::fromEntity)
             .collect(Collectors.toList());
   }
 
   @Override
-  public String updateUserProfileUrl(Long targetUserId, String targetProfileUrl) {
+  public String modifyUserProfileUrl(Long targetUserId, String targetProfileUrl) {
     User user = userRepository.findById(targetUserId)
             .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
 
@@ -50,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public String updateUserNickname(Long targetUserId, String targetNickname) {
+  public String modifyUserNickname(Long targetUserId, String targetNickname) {
     if (userRepository.existsByNickname(targetNickname)) {
       throw new NicknameDuplicationException("이미 사용 중인 닉네임입니다.");
     }
@@ -69,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
   @Transactional
   @Override
-  public UserDto createUser(UserDto userDto) {
+  public UserRequestDto saveUser(UserRequestDto userDto) {
 
     userRepository.findByUsername(userDto.getUsername()).ifPresent(u -> {
       throw new IllegalArgumentException(("해당 아이디가 이미 존재합니다."));
@@ -89,14 +86,14 @@ public class UserServiceImpl implements UserService {
             .build();
 
     User savedUser = userRepository.save(user);
-    return UserDto.fromEntity(savedUser);
+    return UserRequestDto.fromEntity(savedUser);
   }
 
   @Override
-  public UserDataDto getUserByUserId(Long id) {
+  public UserResponseDto getUser(Long id) {
     User user = userRepository.findById(id)
             .orElseThrow(() -> new UsernameNotFoundException("일치하는 유저를 찾지 못했습니다."));
-    return UserDataDto.fromEntity(user);
+    return UserResponseDto.fromEntity(user);
   }
 
   @Override

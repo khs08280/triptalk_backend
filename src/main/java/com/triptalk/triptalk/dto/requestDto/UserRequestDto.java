@@ -1,4 +1,4 @@
-package com.triptalk.triptalk.dto;
+package com.triptalk.triptalk.dto.requestDto;
 
 import com.triptalk.triptalk.domain.entity.User;
 import jakarta.validation.constraints.Email;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class UserRequestDto {
 
   @NotBlank(message = "ID는 필수 값입니다.")
   private String username;
@@ -29,8 +29,8 @@ public class UserDto {
   @Size(min = 8, message = "비밀번호는 적어도 8자 이상이어야 합니다.")
   private String password;
 
-  public static UserDto fromEntity(User user) {
-    return UserDto.builder()
+  public static UserRequestDto fromEntity(User user) {
+    return UserRequestDto.builder()
             .username(user.getUsername())
             .nickname(user.getNickname())
             .email(user.getEmail())

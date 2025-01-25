@@ -1,16 +1,16 @@
 package com.triptalk.triptalk.service;
 
-import com.triptalk.triptalk.dto.UserDataDto;
-import com.triptalk.triptalk.dto.UserDto;
+import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
+import com.triptalk.triptalk.dto.requestDto.UserRequestDto;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
 
 public interface UserService extends UserDetailsService {
-  UserDto createUser(UserDto userDto);
-  UserDataDto getUserByUserId(Long id);
+  UserRequestDto saveUser(UserRequestDto userDto);
+  UserResponseDto getUser(Long id);
   String deleteUser(String token);
-  List<UserDataDto> getAllUser();
-  String updateUserNickname(Long targetUserId, String targetNickname);
-  String updateUserProfileUrl(Long targetUserId, String targetProfileUrl);
+  List<UserResponseDto> getAllUserList();
+  String modifyUserNickname(Long targetUserId, String targetNickname);
+  String modifyUserProfileUrl(Long targetUserId, String targetProfileUrl);
 }
