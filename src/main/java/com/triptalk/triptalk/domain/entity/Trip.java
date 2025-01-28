@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,10 +51,15 @@ public class Trip {
   @Column(name = "visibility", nullable = false, length=20)
   private Visibility visibility;
 
+  @OneToOne(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+  private ChatRoom chatRoom;
+
   @Column(name = "created_at")
+  @CreatedDate
   private LocalDateTime createdAt;
 
   @Column(name = "updated_at")
+  @LastModifiedDate
   private LocalDateTime updatedAt;
 
   @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)

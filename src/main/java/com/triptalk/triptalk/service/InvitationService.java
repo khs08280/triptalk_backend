@@ -1,15 +1,9 @@
 package com.triptalk.triptalk.service;
 
-import com.triptalk.triptalk.domain.entity.Invitation;
-import com.triptalk.triptalk.domain.entity.Trip;
-import com.triptalk.triptalk.domain.entity.TripUser;
-import com.triptalk.triptalk.domain.entity.User;
+import com.triptalk.triptalk.domain.entity.*;
 import com.triptalk.triptalk.domain.enums.InvitationStatus;
 import com.triptalk.triptalk.dto.responseDto.InvitationResponseDto;
-import com.triptalk.triptalk.repository.InvitationRepository;
-import com.triptalk.triptalk.repository.TripRepository;
-import com.triptalk.triptalk.repository.TripUserRepository;
-import com.triptalk.triptalk.repository.UserRepository;
+import com.triptalk.triptalk.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,6 +22,7 @@ public class InvitationService {
   private final UserRepository userRepository;
   private final TripRepository tripRepository;
   private final TripUserRepository tripUserRepository;
+  private final ChatRoomUserRepository chatRoomUserRepository;
 
   public List<InvitationResponseDto> getUserInvitations(Long userId) {
     List<Invitation> invitations = invitationRepository.findAllWithDetailsByInvitedId(userId);
@@ -95,6 +90,8 @@ public class InvitationService {
     }
 
     invitation.updateInvitation(InvitationStatus.ACCEPTED, LocalDateTime.now(), LocalDateTime.now());
+    invitationRepository.save(invitation);
+
 
     TripUser tripUser = TripUser.builder()
             .trip(invitation.getTrip())
@@ -102,9 +99,13 @@ public class InvitationService {
             .joinedAt(LocalDateTime.now())
             .build();
 
-    tripUserRepository.save(tripUser);
+    ChatRoomUser chatRoomUser = ChatRoomUser.builder()
+            .chatRoom(invitation.getTrip().getChatRoom())
+            .user(user)
+            .joinedAt(LocalDateTime.now()).build();
 
-    invitationRepository.save(invitation);
+    tripUserRepository.save(tripUser);
+    chatRoomUserRepository.save(chatRoomUser);
   }
 
   public void rejectInvitation(Long invitationId, Long userId) {

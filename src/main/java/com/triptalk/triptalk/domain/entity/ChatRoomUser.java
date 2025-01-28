@@ -2,6 +2,7 @@ package com.triptalk.triptalk.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "chat_room_users")
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatRoomUser {

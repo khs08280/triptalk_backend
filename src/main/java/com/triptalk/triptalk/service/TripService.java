@@ -1,15 +1,13 @@
 package com.triptalk.triptalk.service;
 
-import com.triptalk.triptalk.domain.entity.Trip;
-import com.triptalk.triptalk.domain.entity.TripUser;
-import com.triptalk.triptalk.domain.entity.User;
+import com.triptalk.triptalk.domain.entity.*;
 import com.triptalk.triptalk.dto.requestDto.TripRequestDto;
 import com.triptalk.triptalk.dto.responseDto.TripResponseDto;
-import com.triptalk.triptalk.repository.TripRepository;
-import com.triptalk.triptalk.repository.TripUserRepository;
-import com.triptalk.triptalk.repository.UserRepository;
+import com.triptalk.triptalk.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,35 +17,36 @@ import java.util.List;
 
 @Service
 @Transactional
+@Slf4j
 @RequiredArgsConstructor
 public class TripService {
 
   private final TripRepository tripRepository;
   private final UserRepository userRepository;
   private final TripUserRepository tripUserRepository;
+  private final ChatRoomRepository chatRoomRepository;
+  private final ChatRoomUserRepository chatRoomUserRepository;
 
   public TripResponseDto saveTrip(TripRequestDto requestDto, User creator) {
 
-    Trip trip = Trip.builder()
-            .title(requestDto.getTitle())
-            .startDate(requestDto.getStartDate())
-            .endDate(requestDto.getEndDate())
-            .location(requestDto.getLocation())
-            .visibility(requestDto.getVisibility())
-            .creator(creator)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .build();
+    Trip trip = createTrip(requestDto, creator);
+    Trip savedTrip;
 
-    Trip savedTrip = tripRepository.save(trip);
+    try {
+      savedTrip = tripRepository.save(trip);
+    } catch (DataAccessException e) {
+      log.error("여행 정보 저장 중 오류 발생: {}", e.getMessage(), e);
+      throw new RuntimeException("여행 정보 저장 중 오류가 발생했습니다.");
+    }
 
-    TripUser tripUser = TripUser.builder()
-            .trip(savedTrip)
-            .user(creator)
-            .joinedAt(LocalDateTime.now())
-            .build();
-
+    TripUser tripUser = createTripUser(savedTrip, creator);
     tripUserRepository.save(tripUser);
+
+    ChatRoom chatRoom = createChatRoom(savedTrip);
+    ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
+
+    ChatRoomUser chatRoomUser = createChatRoomUser(savedChatRoom, creator);
+    chatRoomUserRepository.save(chatRoomUser);
 
     return TripResponseDto.fromEntity(savedTrip);
   }
@@ -92,6 +91,39 @@ public class TripService {
 //    List<TripUser> tripList = tripUserRepository.findByUser(user);
 //    return tripList;
 //  }
+  private Trip createTrip(TripRequestDto requestDto, User creator) {
+    return Trip.builder()
+            .title(requestDto.getTitle())
+            .startDate(requestDto.getStartDate())
+            .endDate(requestDto.getEndDate())
+            .location(requestDto.getLocation())
+            .visibility(requestDto.getVisibility())
+            .creator(creator)
+            .build();
+  }
+
+  private TripUser createTripUser(Trip trip, User user) {
+    return TripUser.builder()
+            .trip(trip)
+            .user(user)
+            .joinedAt(LocalDateTime.now())
+            .build();
+  }
+
+  private ChatRoom createChatRoom(Trip trip) {
+    return ChatRoom.builder()
+            .trip(trip)
+            .build();
+  }
+
+  private ChatRoomUser createChatRoomUser(ChatRoom chatRoom, User user) {
+    return ChatRoomUser.builder()
+            .chatRoom(chatRoom)
+            .user(user)
+            .joinedAt(LocalDateTime.now())
+            .build();
+  }
+
   private Trip findTripOrThrow(Long tripId) {
     return tripRepository.findById(tripId)
             .orElseThrow(() -> new EntityNotFoundException("해당 여행 정보를 찾을 수 없습니다."));

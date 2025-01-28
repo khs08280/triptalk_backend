@@ -31,6 +31,14 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.error(e.getMessage()));
   }
 
+  @ExceptionHandler(IllegalStateException.class)
+  public ResponseEntity<ApiResponse<?>> handleIllegalStateException(IllegalStateException e) {
+    log.error("잘못된 요청 : {}", e.getMessage(), e);
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(e.getMessage()));
+  }
+
   // 403 Forbidden
   @ExceptionHandler(SecurityException.class)
   public ResponseEntity<ApiResponse<?>> handleSecurityException(SecurityException e) {
