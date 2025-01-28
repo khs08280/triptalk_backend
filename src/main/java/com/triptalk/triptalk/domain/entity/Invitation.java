@@ -3,6 +3,7 @@ package com.triptalk.triptalk.domain.entity;
 import com.triptalk.triptalk.domain.enums.InvitationStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Invitation {
 
   @Id
@@ -40,4 +42,18 @@ public class Invitation {
 
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
+
+  @Column(name = "responded_at")
+  private LocalDateTime respondedAt;
+
+  public void updateInvitation(InvitationStatus status, LocalDateTime updatedAt){
+    this.status = status;
+    this.updatedAt = updatedAt;
+  }
+
+  public void updateInvitation(InvitationStatus status, LocalDateTime updatedAt, LocalDateTime respondedAt){
+    this.status = status;
+    this.updatedAt = updatedAt;
+    this.respondedAt = respondedAt;
+  }
 }

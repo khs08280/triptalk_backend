@@ -20,7 +20,7 @@ public class TripResponseDto {
   private LocalDate endDate;
   private String location;
   private Visibility visibility;
-  private String creatorNickname; // 사용자 닉네임 추가
+  private String creatorNickname;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
@@ -33,7 +33,7 @@ public class TripResponseDto {
             .endDate(trip.getEndDate())
             .location(trip.getLocation())
             .visibility(trip.getVisibility())
-            .creatorNickname(trip.getCreator().getNickname()) // 생성자 닉네임 추가
+            .creatorNickname(trip.getCreator().getNickname())
             .createdAt(trip.getCreatedAt())
             .updatedAt(trip.getUpdatedAt())
             .build();

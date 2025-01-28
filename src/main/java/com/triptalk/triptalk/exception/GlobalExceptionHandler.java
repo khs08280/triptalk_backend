@@ -1,6 +1,7 @@
 package com.triptalk.triptalk.exception;
 
 import com.triptalk.triptalk.dto.responseDto.ApiResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,14 @@ public class GlobalExceptionHandler {
     log.error("권한이 없음 : {}", e.getMessage(), e);
 
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ApiResponse.error(e.getMessage()));
+  }
+
+  @ExceptionHandler(ExpiredJwtException.class)
+  public ResponseEntity<ApiResponse<?>> handleExpiredJwtException(ExpiredJwtException e) {
+    log.error("JWT 토큰이 만료되었습니다. : {}", e.getMessage(), e);
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.error(e.getMessage()));
   }
 
