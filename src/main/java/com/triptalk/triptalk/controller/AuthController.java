@@ -2,6 +2,7 @@ package com.triptalk.triptalk.controller;
 
 import com.triptalk.triptalk.dto.requestDto.AuthRequestDto;
 import com.triptalk.triptalk.dto.requestDto.UserRequestDto;
+import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.service.JwtService;
 import com.triptalk.triptalk.service.UserService;
 import com.triptalk.triptalk.dto.responseDto.ApiResponse;
@@ -28,8 +29,8 @@ public class AuthController {
   private final JwtService jwtService;
 
   @PostMapping("/signup")
-  public ResponseEntity<ApiResponse<UserRequestDto>> signUp(@RequestBody @Valid UserRequestDto userDto) {
-    UserRequestDto createdUser = userService.saveUser(userDto);
+  public ResponseEntity<ApiResponse<UserResponseDto>> signUp(@RequestBody @Valid UserRequestDto userDto) {
+    UserResponseDto createdUser = userService.saveUser(userDto);
     return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(createdUser));
   }
 

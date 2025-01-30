@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
@@ -26,6 +27,7 @@ public class UserServiceImpl implements UserService {
   private final JwtService jwtService;
 
   @Override
+  @Transactional(readOnly = true)
   public List<UserResponseDto> getAllUserList() {
     List<User> allUsers = userRepository.findAll();
 
@@ -46,35 +48,29 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public String modifyUserNickname(Long targetUserId, String targetNickname) {
     if (userRepository.existsByNickname(targetNickname)) {
       throw new NicknameDuplicationException("이미 사용 중인 닉네임입니다.");
     }
-    log.info(targetNickname);
-
     User user = userRepository.findById(targetUserId)
             .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
 
     user.updateNickname(targetNickname);
 
-    User user2 = userRepository.findById(targetUserId)
-            .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
-    log.info(user2.getNickname());
+    log.info("수정된 닉네임 = {}", user.getNickname());
     return "닉네임이 성공적으로 변경되었습니다.";
   }
 
-  @Transactional
   @Override
-  public UserRequestDto saveUser(UserRequestDto userDto) {
+  public UserResponseDto saveUser(UserRequestDto userDto) {
 
-    userRepository.findByUsername(userDto.getUsername()).ifPresent(u -> {
+    if(userRepository.existsByUsername(userDto.getUsername())){
       throw new IllegalArgumentException(("해당 아이디가 이미 존재합니다."));
-    });
+    }
 
-    userRepository.findByEmail(userDto.getEmail()).ifPresent(u -> {
+    if(userRepository.existsByEmail(userDto.getEmail())){
       throw new IllegalArgumentException(("해당 이메일이 이미 존재합니다."));
-    });
+    }
 
     User user = User.builder()
             .username(userDto.getUsername())
@@ -86,13 +82,14 @@ public class UserServiceImpl implements UserService {
             .build();
 
     User savedUser = userRepository.save(user);
-    return UserRequestDto.fromEntity(savedUser);
+    return UserResponseDto.fromEntity(savedUser);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponseDto getUser(Long id) {
     User user = userRepository.findById(id)
-            .orElseThrow(() -> new UsernameNotFoundException("일치하는 유저를 찾지 못했습니다."));
+            .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
     return UserResponseDto.fromEntity(user);
   }
 
@@ -107,7 +104,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     return userRepository.findByUsername(username)
-            .orElseThrow(()-> new UsernameNotFoundException("일치하는 유저를 찾지 못했습니다."));
+            .orElseThrow(()-> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
   }
 
 }

@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import java.util.List;
 
 public interface UserService extends UserDetailsService {
-  UserRequestDto saveUser(UserRequestDto userDto);
+  UserResponseDto saveUser(UserRequestDto userDto);
   UserResponseDto getUser(Long id);
   String deleteUser(String token);
   List<UserResponseDto> getAllUserList();
