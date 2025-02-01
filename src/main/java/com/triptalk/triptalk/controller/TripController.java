@@ -42,7 +42,7 @@ public class TripController {
 
   @PatchMapping("/{tripId}")
   public ResponseEntity<ApiResponse<TripResponseDto>> updateTrip(@PathVariable Long tripId,
-                                                                 @RequestBody TripRequestDto tripRequestDto,
+                                                                 @Valid @RequestBody TripRequestDto tripRequestDto,
                                                                  @AuthenticationPrincipal User user) {
     log.info("여행 수정 요청: tripId={}, userId={}, title={}", tripId, user.getId(), tripRequestDto.getTitle());
 

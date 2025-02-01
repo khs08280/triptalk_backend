@@ -6,6 +6,7 @@ import com.triptalk.triptalk.dto.requestDto.ProfileRequestDto;
 import com.triptalk.triptalk.dto.responseDto.ApiResponse;
 import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -68,7 +69,7 @@ public class UserController {
   }
 
   @PatchMapping("/me/nickname")
-  public ResponseEntity<ApiResponse<String>> updateNickname(@RequestBody NicknameRequestDto nicknameDto, Authentication authentication){
+  public ResponseEntity<ApiResponse<String>> updateNickname(@Valid @RequestBody NicknameRequestDto nicknameDto, Authentication authentication){
     try {
       Long userId = ((User) authentication.getPrincipal()).getId();
       String message = userService.modifyUserNickname(userId, nicknameDto.getNickname());
@@ -80,7 +81,7 @@ public class UserController {
   }
 
   @PatchMapping("/me/profileImageUrl")
-  public ResponseEntity<ApiResponse<String>> updateProfileImageUrl(@RequestBody ProfileRequestDto profileDto, Authentication authentication){
+  public ResponseEntity<ApiResponse<String>> updateProfileImageUrl(@Valid @RequestBody ProfileRequestDto profileDto, Authentication authentication){
     try {
       Long userId = ((User) authentication.getPrincipal()).getId();
       String message = userService.modifyUserProfileUrl(userId, profileDto.getProfileImageUrl());
