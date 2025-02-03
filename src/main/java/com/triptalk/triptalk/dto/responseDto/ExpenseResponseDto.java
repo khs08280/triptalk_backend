@@ -24,7 +24,7 @@ public class ExpenseResponseDto {
   private LocalDateTime updatedAt;
 
   // 엔티티 -> DTO 변환 메서드
-  public static ExpenseResponseDto from(Expense expense) {
+  public static ExpenseResponseDto fromEntity(Expense expense) {
     return ExpenseResponseDto.builder()
             .id(expense.getId())
             .scheduleId(expense.getSchedule().getId())

@@ -1,7 +1,9 @@
 package com.triptalk.triptalk.domain.entity;
 
+import com.triptalk.triptalk.dto.requestDto.ExpenseRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @Table(name = "expenses")
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Expense {
 
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,4 +44,16 @@ public class Expense {
   @Column(name = "updated_at")
   @LastModifiedDate
   private LocalDateTime updatedAt;
+
+  public Expense updateDetails(ExpenseRequestDto requestDto) {
+    return Expense.builder()
+            .id(this.id)
+            .schedule(this.schedule)
+            .category(requestDto.getCategory())
+            .amount(requestDto.getAmount())
+            .memo(requestDto.getMemo())
+            .createdAt(this.createdAt)
+            .updatedAt(this.updatedAt)
+            .build();
+  }
 }

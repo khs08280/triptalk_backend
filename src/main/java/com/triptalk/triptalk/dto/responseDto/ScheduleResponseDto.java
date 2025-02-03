@@ -29,7 +29,7 @@ public class ScheduleResponseDto {
   /**
    * Schedule 엔티티 -> DTO 변환 메서드
    */
-  public static ScheduleResponseDto from(Schedule schedule) {
+  public static ScheduleResponseDto fromEntity(Schedule schedule) {
     return ScheduleResponseDto.builder()
             .id(schedule.getId())
             .tripId(schedule.getTrip().getId())

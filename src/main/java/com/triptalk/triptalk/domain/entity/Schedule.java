@@ -1,7 +1,9 @@
 package com.triptalk.triptalk.domain.entity;
 
+import com.triptalk.triptalk.dto.requestDto.ScheduleRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,6 +18,7 @@ import java.time.LocalTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Schedule {
 
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,4 +50,18 @@ public class Schedule {
   @LastModifiedDate
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
+
+  public Schedule updateDetails(ScheduleRequestDto requestDto) {
+    return Schedule.builder()
+            .id(this.id)
+            .trip(this.trip)
+            .date(requestDto.getDate())
+            .place(requestDto.getPlace())
+            .startTime(requestDto.getStartTime())
+            .endTime(requestDto.getEndTime())
+            .memo(requestDto.getMemo())
+            .createdAt(this.createdAt)
+            .updatedAt(this.updatedAt)
+            .build();
+  }
 }
