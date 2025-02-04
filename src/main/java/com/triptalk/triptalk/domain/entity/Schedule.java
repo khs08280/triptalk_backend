@@ -31,8 +31,12 @@ public class Schedule {
   @Column(name = "date")
   private LocalDate date;
 
-  @Column(name = "place", nullable = false, length = 255)
-  private String place;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "place_id")
+  private Place place;
+
+  @Column(name = "name", nullable = false)
+  private String name;
 
   @Column(name = "start_time")
   private LocalTime startTime;
@@ -56,7 +60,7 @@ public class Schedule {
             .id(this.id)
             .trip(this.trip)
             .date(requestDto.getDate())
-            .place(requestDto.getPlace())
+            .name(requestDto.getName())
             .startTime(requestDto.getStartTime())
             .endTime(requestDto.getEndTime())
             .memo(requestDto.getMemo())
