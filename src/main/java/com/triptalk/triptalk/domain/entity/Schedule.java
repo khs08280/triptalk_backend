@@ -2,10 +2,7 @@ package com.triptalk.triptalk.domain.entity;
 
 import com.triptalk.triptalk.dto.requestDto.ScheduleRequestDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -16,6 +13,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "schedules")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

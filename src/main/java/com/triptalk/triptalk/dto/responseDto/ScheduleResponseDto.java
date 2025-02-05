@@ -19,7 +19,7 @@ public class ScheduleResponseDto {
   private Long id;
   private Long tripId;            // Schedule과 연관된 Trip의 ID만 노출
   private LocalDate date;
-  private String place;
+  private PlaceResponseDto placeResponseDto;
   private LocalTime startTime;
   private LocalTime endTime;
   private String memo;
@@ -34,7 +34,7 @@ public class ScheduleResponseDto {
             .id(schedule.getId())
             .tripId(schedule.getTrip().getId())
             .date(schedule.getDate())
-            .place(schedule.getPlace())
+            .placeResponseDto(PlaceResponseDto.fromEntity(schedule.getPlace()))
             .startTime(schedule.getStartTime())
             .endTime(schedule.getEndTime())
             .memo(schedule.getMemo())

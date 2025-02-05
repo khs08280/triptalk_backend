@@ -12,14 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/schedules")
+@RequestMapping("/api/v1/schedules")
 public class ScheduleController {
 
   private final ScheduleService scheduleService;
 
-  /**
-   * 스케줄 생성
-   */
   @PostMapping
   public ResponseEntity<ApiResponse<ScheduleResponseDto>> createSchedule(
           @Valid @RequestBody ScheduleRequestDto requestDto
@@ -30,9 +27,6 @@ public class ScheduleController {
     return ResponseEntity.ok(response);
   }
 
-  /**
-   * 특정 스케줄 조회
-   */
   @GetMapping("/{scheduleId}")
   public ResponseEntity<ApiResponse<ScheduleResponseDto>> getSchedule(@PathVariable Long scheduleId) {
     ScheduleResponseDto schedule = scheduleService.getSchedule(scheduleId);
@@ -40,9 +34,6 @@ public class ScheduleController {
     return ResponseEntity.ok(response);
   }
 
-  /**
-   * 모든 스케줄 조회
-   */
   @GetMapping
   public ResponseEntity<ApiResponse<List<ScheduleResponseDto>>> getAllSchedules() {
     List<ScheduleResponseDto> schedules = scheduleService.getAllSchedules();
@@ -51,9 +42,6 @@ public class ScheduleController {
     return ResponseEntity.ok(response);
   }
 
-  /**
-   * 스케줄 수정
-   */
   @PutMapping("/{scheduleId}")
   public ResponseEntity<ApiResponse<ScheduleResponseDto>> updateSchedule(
           @PathVariable Long scheduleId,
@@ -64,9 +52,6 @@ public class ScheduleController {
     return ResponseEntity.ok(response);
   }
 
-  /**
-   * 스케줄 삭제
-   */
   @DeleteMapping("/{scheduleId}")
   public ResponseEntity<ApiResponse<Void>> deleteSchedule(@PathVariable Long scheduleId) {
     scheduleService.deleteSchedule(scheduleId);

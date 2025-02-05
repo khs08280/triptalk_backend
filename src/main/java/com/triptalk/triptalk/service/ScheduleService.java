@@ -1,11 +1,15 @@
 package com.triptalk.triptalk.service;
 
+import com.triptalk.triptalk.domain.entity.Place;
 import com.triptalk.triptalk.domain.entity.Schedule;
 import com.triptalk.triptalk.domain.entity.Trip;
+import com.triptalk.triptalk.domain.enums.PlaceType;
 import com.triptalk.triptalk.dto.requestDto.ScheduleRequestDto;
 import com.triptalk.triptalk.dto.responseDto.ScheduleResponseDto;
+import com.triptalk.triptalk.repository.PlaceRepository;
 import com.triptalk.triptalk.repository.ScheduleRepository;
 import com.triptalk.triptalk.repository.TripRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,27 +23,33 @@ public class ScheduleService {
 
   private final ScheduleRepository scheduleRepository;
   private final TripRepository tripRepository;
+  private final PlaceService placeService;
 
-  public ScheduleResponseDto createSchedule(ScheduleRequestDto requestDto) {
-    // 1) Trip 엔티티 확인
-    Trip trip = tripRepository.findById(requestDto.getTripId())
-            .orElseThrow(() -> new IllegalArgumentException("해당 tripId가 존재하지 않습니다. id=" + requestDto.getTripId()));
+  @Transactional
+  public ScheduleResponseDto createSchedule(ScheduleRequestDto scheduleDto) {
+    Trip trip = tripRepository.findById(scheduleDto.getTripId())
+            .orElseThrow(() -> new EntityNotFoundException("Trip not found with id: " + scheduleDto.getTripId()));
 
-    // 2) Schedule 엔티티 생성
     Schedule schedule = Schedule.builder()
             .trip(trip)
-            .date(requestDto.getDate())
-            .place(requestDto.getPlace())
-            .startTime(requestDto.getStartTime())
-            .endTime(requestDto.getEndTime())
-            .memo(requestDto.getMemo())
+            .date(scheduleDto.getDate())
+            .startTime(scheduleDto.getStartTime())
+            .endTime(scheduleDto.getEndTime())
+            .memo(scheduleDto.getMemo())
             .build();
 
-    // 3) DB 저장
-    Schedule saved = scheduleRepository.save(schedule);
-
-    // 4) 엔티티 -> DTO 변환하여 반환
-    return ScheduleResponseDto.fromEntity(saved);
+    if (scheduleDto.getPlaceType() == PlaceType.CUSTOM) {
+      // CUSTOM 타입이면, placeName만 설정하고 Place는 null로 둡니다.
+      schedule.setName(scheduleDto.getName());
+    } else if (scheduleDto.getPlaceType() == PlaceType.NAVER || scheduleDto.getPlaceType() == PlaceType.GOOGLE) {
+      // NAVER 또는 GOOGLE 타입이면, PlaceService를 사용하여 Place 정보 가져오기/생성
+      Place place = placeService.getOrCreatePlace(scheduleDto);
+      schedule.setPlace(place);
+      schedule.setName(place.getName());
+    } else {
+      throw new IllegalArgumentException("Invalid place type");
+    }
+    return ScheduleResponseDto.fromEntity(scheduleRepository.save(schedule));
   }
 
   @Transactional(readOnly = true)
