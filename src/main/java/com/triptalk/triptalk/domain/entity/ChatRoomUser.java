@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -28,5 +29,6 @@ public class ChatRoomUser {
   private User user;
 
   @Column(name = "joined_at")
+  @CreatedDate
   private LocalDateTime joinedAt;
 }

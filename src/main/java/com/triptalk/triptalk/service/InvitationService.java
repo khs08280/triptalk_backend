@@ -102,7 +102,7 @@ public class InvitationService {
     ChatRoomUser chatRoomUser = ChatRoomUser.builder()
             .chatRoom(invitation.getTrip().getChatRoom())
             .user(user)
-            .joinedAt(LocalDateTime.now()).build();
+            .build();
 
     tripUserRepository.save(tripUser);
     chatRoomUserRepository.save(chatRoomUser);
