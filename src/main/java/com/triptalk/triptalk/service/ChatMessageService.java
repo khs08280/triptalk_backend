@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,13 +27,17 @@ public class ChatMessageService {
   private final ChatRoomRepository chatRoomRepository;
   private final UserRepository userRepository;
 
-  public List<ChatMessage> getLastMessages(Long roomId, int size) {
+  public List<ChatMessageResponseDto> getLastMessages(Long roomId, int size) {
     if(!chatRoomRepository.existsById(roomId)){
       throw new IllegalArgumentException("해당 채팅방이 존재하지 않습니다.");
     }
 
     Pageable pageable = PageRequest.of(0, size);
-    return chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(roomId, pageable).getContent();
+    List<ChatMessage> messages = chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(roomId, pageable).getContent();
+
+    return messages.stream()
+            .map(ChatMessageResponseDto::fromEntity)
+            .collect(Collectors.toList());
   }
 
   public List<ChatMessage> getMoreMessages(Long roomId, int page, int size) {

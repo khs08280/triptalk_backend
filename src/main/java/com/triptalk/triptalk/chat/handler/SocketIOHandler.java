@@ -1,6 +1,9 @@
 package com.triptalk.triptalk.chat.handler;
 
+import com.corundumstudio.socketio.HandshakeData;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.triptalk.triptalk.chat.dto.request.ChatMessageRequestDto;
 import com.triptalk.triptalk.chat.dto.request.JoinRoomRequestDto;
 import com.triptalk.triptalk.chat.dto.request.MessagePageableRequestDto;
@@ -8,12 +11,14 @@ import com.triptalk.triptalk.chat.dto.response.ChatMessageResponseDto;
 import com.triptalk.triptalk.domain.entity.ChatMessage;
 import com.triptalk.triptalk.service.ChatMessageService;
 import com.triptalk.triptalk.service.ChatRoomUserService;
+import com.triptalk.triptalk.service.JwtService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -24,13 +29,45 @@ public class SocketIOHandler {
   private final SocketIOServer socketIOServer;
   private final ChatRoomUserService chatRoomUserService;
   private final ChatMessageService chatMessageService;
+  private final JwtService jwtService;
+
 
   @PostConstruct
   private void init() {
     socketIOServer.addConnectListener(client -> {
-      String sessionId = client.getSessionId().toString();
-      log.info("🔵 유저 연결됨: {}", sessionId);
-      client.sendEvent("connect_success", "서버에 연결되었습니다.");
+      HandshakeData handshakeData = client.getHandshakeData();
+
+      // (A) 쿼리 파라미터에서 토큰 가져오기
+//      String token = handshakeData.getSingleUrlParam("token");
+      String token = null;
+      // (B) 혹은 HTTP 헤더에서 가져오기 (권장)
+       String authHeader = handshakeData.getHttpHeaders().get("Authorization");
+       if (authHeader != null && authHeader.startsWith("Bearer ")) {
+           token = authHeader.substring(7);
+       }
+
+      if (token == null || token.isEmpty()) {
+        log.warn("⛔ 토큰이 전송되지 않음 - 소켓 연결 거부");
+        client.disconnect();
+        return;
+      }
+
+      try {
+        jwtService.validateToken(token); // 유효하지 않으면 예외 발생
+
+        Long userId = jwtService.getUserId(token);
+
+        // 소켓 client 객체에 "userId"라는 키로 보관
+        client.set("userId", userId);
+        log.info("🔵 유저 연결 성공: sessionId={}, userId={}", client.getSessionId(), userId);
+
+        // 연결 성공 메시지 보내기 (옵션)
+        client.sendEvent("connect_success", "서버에 인증된 연결이 완료되었습니다.");
+
+      } catch (Exception e) {
+        log.error("⛔ JWT 토큰 검증 실패: {}", e.getMessage(), e);
+        client.disconnect(); // 인증 실패 시 즉시 연결 해제
+      }
     });
 
     socketIOServer.addDisconnectListener(client -> {
@@ -46,7 +83,7 @@ public class SocketIOHandler {
 
       if (isExistingUser) {
         log.info("기존 유저 {}가 채팅방 {}에 재접속", data.getUserId(), data.getRoomId());
-        List<ChatMessage> lastMessages = chatMessageService.getLastMessages(data.getRoomId(), 50);
+        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId(), 50);
         client.sendEvent("load_old_messages", lastMessages);
       } else {
         log.info("새로운 유저 {}가 채팅방 {}에 참여", data.getUserId(), data.getRoomId());
@@ -55,8 +92,8 @@ public class SocketIOHandler {
 
         chatRoomUserService.addUserToRoom(data.getUserId(), data.getRoomId());
 
-        List<ChatMessage> lastMessages = chatMessageService.getLastMessages(data.getRoomId(), 50);
-        client.sendEvent("메시지 불러오기", lastMessages);
+        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId(), 50);
+        client.sendEvent("last_messages", lastMessages);
       }
     });
 
@@ -65,7 +102,7 @@ public class SocketIOHandler {
       boolean isExistingUser = chatRoomUserService.isUserInRoom(data.getUserId(), data.getRoomId());
 
       List<ChatMessage> lastMessages = chatMessageService.getMoreMessages(data.getRoomId(), data.getPage(), data.getSize());
-      client.sendEvent("메시지 불러오기", lastMessages);
+      client.sendEvent("last_messages", lastMessages);
     });
 
     socketIOServer.addEventListener("out_room", JoinRoomRequestDto.class, (client, data, ackRequest) -> {

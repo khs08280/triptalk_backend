@@ -1,12 +1,15 @@
 package com.triptalk.triptalk.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.triptalk.triptalk.domain.entity.User;
+import com.triptalk.triptalk.repository.UserRepository;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -16,7 +19,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class JwtService {
+
+  private final UserRepository userRepository;
 
   @Value("${jwt.secret}")
   private String SECRET_KEY;
@@ -59,12 +66,15 @@ public class JwtService {
   }
 
 
-  public String generateToken(String userName) {
+  public String generateToken(String username) {
     if (EXPIRATION_TIME == null || EXPIRATION_TIME <= 0) {
       throw new IllegalArgumentException("Expiration time is not set correctly.");
     }
+    User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다."));
+
     Map<String, Object> claims = new HashMap<>();
-    return createToken(claims, userName);
+    claims.put("userId",user.getId());
+    return createToken(claims, username);
   }
 
   private String createToken(Map<String, Object> claims, String userName) {
@@ -83,6 +93,65 @@ public class JwtService {
     } catch (Exception e) {
       // 토큰이 잘못된 경우 예외 처리
       return false;
+    }
+  }
+
+//  public void validateToken(String token, UserDetails userDetails){
+//    try {
+//      final String username = extractUsername(token);
+//      // 원하는 조건(서명, 만료여부 등)
+//      if (!username.equals(userDetails.getUsername()) || isTokenExpired(token)) {
+//        throw new JwtException("토큰 검증 실패");
+//      }
+//    } catch (Exception e) {
+//      throw new JwtException("토큰 파싱/서명 검증 에러", e);
+//    }
+//  }
+public void validateToken(String token) {
+  try {
+    // parseClaimsJws: 서명 검증 + 만료 시간 검증
+    Jwts.parserBuilder()
+            .setSigningKey(getSignKey())
+            .build()
+            .parseClaimsJws(token);
+
+    // parse 단계에서 예외가 발생하지 않으면 "서명 및 기본 만료 시간" 검증 OK
+
+  } catch (ExpiredJwtException e) {
+    // 토큰이 만료된 경우
+    log.error("JWT Token 만료됨: {}", e.getMessage());
+    throw new JwtException("만료된 토큰입니다.", e);
+  } catch (SignatureException e) {
+    // 서명(Signature)이 유효하지 않은 경우
+    log.error("JWT 서명 검증 실패: {}", e.getMessage());
+    throw new JwtException("유효하지 않은 서명입니다.", e);
+  } catch (JwtException e) {
+    // 그 밖에 잘못된 토큰 구조 등
+    log.error("JWT 검증 실패: {}", e.getMessage());
+    throw new JwtException("유효하지 않은 토큰입니다.", e);
+  }
+}
+
+  public Long getUserId(String token) {
+    try {
+      Claims claims = Jwts.parserBuilder()
+              .setSigningKey(getSignKey())
+              .build()
+              .parseClaimsJws(token)
+              .getBody();
+
+      // 예: JWT payload에 "userId" 라는 클레임을 담아두었다고 가정
+      return claims.get("userId", Long.class);
+
+    } catch (ExpiredJwtException e) {
+      log.error("JWT Token 만료됨 : {}", e.getMessage());
+      throw new JwtException("만료된 토큰입니다.", e);
+    } catch (SignatureException e) {
+      log.error("JWT 서명 검증 실패 : {}", e.getMessage());
+      throw new JwtException("유효하지 않은 서명입니다.", e);
+    } catch (JwtException e) {
+      log.error("JWT 검증 실패 : {}", e.getMessage());
+      throw new JwtException("유효하지 않은 토큰입니다.", e);
     }
   }
 
