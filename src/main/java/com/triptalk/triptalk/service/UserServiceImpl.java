@@ -3,7 +3,8 @@ package com.triptalk.triptalk.service;
 import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.dto.requestDto.UserRequestDto;
-import com.triptalk.triptalk.exception.NicknameDuplicationException;
+import com.triptalk.triptalk.exception.DuplicatedException;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public String modifyUserProfileUrl(Long targetUserId, String targetProfileUrl) {
     User user = userRepository.findById(targetUserId)
-            .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
 
     user.updateProfileUrl(targetProfileUrl);
 
@@ -50,10 +51,10 @@ public class UserServiceImpl implements UserService {
   @Override
   public String modifyUserNickname(Long targetUserId, String targetNickname) {
     if (userRepository.existsByNickname(targetNickname)) {
-      throw new NicknameDuplicationException("이미 사용 중인 닉네임입니다.");
+      throw new DuplicatedException("이미 사용 중인 닉네임입니다.");
     }
     User user = userRepository.findById(targetUserId)
-            .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
 
     user.updateNickname(targetNickname);
 
@@ -65,11 +66,11 @@ public class UserServiceImpl implements UserService {
   public UserResponseDto saveUser(UserRequestDto userDto) {
 
     if(userRepository.existsByUsername(userDto.getUsername())){
-      throw new IllegalArgumentException(("해당 아이디가 이미 존재합니다."));
+      throw new DuplicatedException(("해당 아이디가 이미 존재합니다."));
     }
 
     if(userRepository.existsByEmail(userDto.getEmail())){
-      throw new IllegalArgumentException(("해당 이메일이 이미 존재합니다."));
+      throw new DuplicatedException(("해당 이메일이 이미 존재합니다."));
     }
 
     User user = User.builder()
@@ -89,22 +90,22 @@ public class UserServiceImpl implements UserService {
   @Transactional(readOnly = true)
   public UserResponseDto getUser(Long id) {
     User user = userRepository.findById(id)
-            .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
     return UserResponseDto.fromEntity(user);
   }
 
   @Override
   public String deleteUser(String username) {
-    User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
+    User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
 
     userRepository.delete(user);
     return "회원탈퇴가 성공적으로 처리되었습니다.";
   }
 
   @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  public UserDetails loadUserByUsername(String username) {
     return userRepository.findByUsername(username)
-            .orElseThrow(()-> new UsernameNotFoundException("해당 유저를 찾지 못했습니다."));
+            .orElseThrow(()-> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
   }
 
 }

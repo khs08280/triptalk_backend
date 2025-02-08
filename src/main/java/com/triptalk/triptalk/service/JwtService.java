@@ -1,6 +1,7 @@
 package com.triptalk.triptalk.service;
 
 import com.triptalk.triptalk.domain.entity.User;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -70,7 +71,7 @@ public class JwtService {
     if (EXPIRATION_TIME == null || EXPIRATION_TIME <= 0) {
       throw new IllegalArgumentException("Expiration time is not set correctly.");
     }
-    User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다."));
+    User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾을 수 없습니다."));
 
     Map<String, Object> claims = new HashMap<>();
     claims.put("userId",user.getId());

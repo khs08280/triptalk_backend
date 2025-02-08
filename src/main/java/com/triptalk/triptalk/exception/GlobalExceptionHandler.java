@@ -2,6 +2,7 @@ package com.triptalk.triptalk.exception;
 
 import com.triptalk.triptalk.dto.responseDto.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,16 +16,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
   // 404 Not Found
-  @ExceptionHandler(EntityNotFoundException.class)
-  public ResponseEntity<ApiResponse<?>> handleEntityNotFoundException(EntityNotFoundException e) {
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ApiResponse<?>> handleResourceNotFoundException(ResourceNotFoundException e) {
     log.error("해당 정보를 찾을 수 없습니다. : {}", e.getMessage(), e);
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(ApiResponse.error(e.getMessage()));
   }
 
   // 400 Bad Request
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException e) {
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ApiResponse<?>> handleBadRequestException(BadRequestException e) {
     log.error("잘못된 요청 : {}", e.getMessage(), e);
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -55,15 +56,13 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.error(e.getMessage()));
   }
+  @ExceptionHandler(JwtException.class)
+  public ResponseEntity<ApiResponse<?>> handleJwtException(JwtException e) {
+    log.error("유효하지 않은 JWT 토큰입니다. : {}", e.getMessage(), e);
 
-  @ExceptionHandler(UsernameNotFoundException.class)
-  public ResponseEntity<ApiResponse<?>> handleUsernameNotFoundException(UsernameNotFoundException e) {
-    log.error("해당 사용자 이름과 일치하는 유저를 찾지 못했습니다. : {}", e.getMessage(), e);
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.error(e.getMessage()));
   }
-
   // 500 Internal Server Error (기타 모든 예외)
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<?>> handleGeneralException(Exception e) {

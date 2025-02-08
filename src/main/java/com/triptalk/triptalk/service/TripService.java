@@ -3,6 +3,7 @@ package com.triptalk.triptalk.service;
 import com.triptalk.triptalk.domain.entity.*;
 import com.triptalk.triptalk.dto.requestDto.TripRequestDto;
 import com.triptalk.triptalk.dto.responseDto.TripResponseDto;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +66,7 @@ public class TripService {
 
   @Transactional(readOnly = true)
   public TripResponseDto getTripById(Long tripId){
-    Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new EntityNotFoundException("해당 여행을 찾을 수 없습니다."));
+    Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new ResourceNotFoundException("해당 여행을 찾을 수 없습니다."));
 
     return TripResponseDto.fromEntity(trip);
   }
@@ -82,7 +83,7 @@ public class TripService {
 
   public List<User> getTripMembers(Long tripId) {
     Trip trip = tripRepository.findById(tripId)
-            .orElseThrow(() -> new EntityNotFoundException("해당 여행을 찾을 수 없습니다. ID: " + tripId));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 여행을 찾을 수 없습니다. ID: " + tripId));
 
     return tripUserRepository.findUsersByTrip(trip);
   }
@@ -126,7 +127,7 @@ public class TripService {
 
   private Trip findTripOrThrow(Long tripId) {
     return tripRepository.findById(tripId)
-            .orElseThrow(() -> new EntityNotFoundException("해당 여행 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 여행 정보를 찾을 수 없습니다."));
   }
 
   private static void validateCreator(Long userId, Trip trip) {

@@ -6,6 +6,8 @@ import com.triptalk.triptalk.domain.entity.Trip;
 import com.triptalk.triptalk.domain.enums.PlaceType;
 import com.triptalk.triptalk.dto.requestDto.ScheduleRequestDto;
 import com.triptalk.triptalk.dto.responseDto.ScheduleResponseDto;
+import com.triptalk.triptalk.exception.BadRequestException;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.PlaceRepository;
 import com.triptalk.triptalk.repository.ScheduleRepository;
 import com.triptalk.triptalk.repository.TripRepository;
@@ -28,7 +30,7 @@ public class ScheduleService {
   @Transactional
   public ScheduleResponseDto createSchedule(ScheduleRequestDto scheduleDto) {
     Trip trip = tripRepository.findById(scheduleDto.getTripId())
-            .orElseThrow(() -> new EntityNotFoundException("Trip not found with id: " + scheduleDto.getTripId()));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 여행을 찾을 수 없습니다. id: " + scheduleDto.getTripId()));
 
     Schedule schedule = Schedule.builder()
             .trip(trip)
@@ -47,7 +49,7 @@ public class ScheduleService {
       schedule.setPlace(place);
       schedule.setName(place.getName());
     } else {
-      throw new IllegalArgumentException("Invalid place type");
+      throw new BadRequestException("잘못된 장소 타입입니다.");
     }
     return ScheduleResponseDto.fromEntity(scheduleRepository.save(schedule));
   }
@@ -55,7 +57,7 @@ public class ScheduleService {
   @Transactional(readOnly = true)
   public ScheduleResponseDto getSchedule(Long scheduleId) {
     Schedule schedule = scheduleRepository.findById(scheduleId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 스케줄이 존재하지 않습니다. id=" + scheduleId));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 스케줄을 찾을 수 없습니다. id=" + scheduleId));
 
     return ScheduleResponseDto.fromEntity(schedule);
   }
@@ -70,7 +72,7 @@ public class ScheduleService {
 
   public ScheduleResponseDto updateSchedule(Long scheduleId, ScheduleRequestDto requestDto) {
     Schedule schedule = scheduleRepository.findById(scheduleId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 스케줄입니다. id=" + scheduleId));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 스케줄을 찾을 수 없습니다. id=" + scheduleId));
 
     schedule = schedule.updateDetails(requestDto);
 
@@ -79,7 +81,7 @@ public class ScheduleService {
 
   public void deleteSchedule(Long scheduleId) {
     if (!scheduleRepository.existsById(scheduleId)) {
-      throw new IllegalArgumentException("삭제할 스케줄이 존재하지 않습니다. id=" + scheduleId);
+      throw new ResourceNotFoundException("해당 스케줄이 존재하지 않습니다. id=" + scheduleId);
     }
     scheduleRepository.deleteById(scheduleId);
   }

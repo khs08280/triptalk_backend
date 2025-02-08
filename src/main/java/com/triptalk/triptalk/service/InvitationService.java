@@ -3,6 +3,7 @@ package com.triptalk.triptalk.service;
 import com.triptalk.triptalk.domain.entity.*;
 import com.triptalk.triptalk.domain.enums.InvitationStatus;
 import com.triptalk.triptalk.dto.responseDto.InvitationResponseDto;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +36,13 @@ public class InvitationService {
   public void sendInvitation(Long tripId, Long inviterId, String invitedNickname) {
     // 초대할 여행과 초대할 사용자를 찾음
     Trip trip = tripRepository.findById(tripId)
-            .orElseThrow(() -> new EntityNotFoundException("해당 여행을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 여행을 찾을 수 없습니다."));
 
     User inviter = userRepository.findById(inviterId)
-            .orElseThrow(() -> new EntityNotFoundException("해당 초대자는 존재하지 않습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 초대자는 존재하지 않습니다."));
 
     User invited = userRepository.findByNickname(invitedNickname)
-            .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾지 못했습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
 
     // 이미 초대된 상태인지 확인
     if (invitationRepository.existsByTripAndInvited(trip, invited)) {
@@ -65,7 +66,7 @@ public class InvitationService {
   public void cancelInvitation(Long invitationId, Long userId) {
     // 초대 정보 가져오기
     Invitation invitation = invitationRepository.findById(invitationId)
-            .orElseThrow(() -> new EntityNotFoundException("초대 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("초대 정보를 찾을 수 없습니다."));
 
     // 초대자의 유효성 체크 (초대자는 초대 취소 권한이 있음)
     if (!invitation.getInviter().getId().equals(userId)) {
@@ -82,7 +83,7 @@ public class InvitationService {
   public void acceptInvitation(Long invitationId, User user) {
     // 초대 정보 가져오기
     Invitation invitation = invitationRepository.findById(invitationId)
-            .orElseThrow(() -> new EntityNotFoundException("초대 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("초대 정보를 찾을 수 없습니다."));
 
     // 초대받은 사용자 확인
     if (!invitation.getInvited().getId().equals(user.getId())) {
@@ -111,7 +112,7 @@ public class InvitationService {
   public void rejectInvitation(Long invitationId, Long userId) {
     // 초대 정보 가져오기
     Invitation invitation = invitationRepository.findById(invitationId)
-            .orElseThrow(() -> new EntityNotFoundException("초대 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("초대 정보를 찾을 수 없습니다."));
 
     // 초대받은 사용자 확인
     if (!invitation.getInvited().getId().equals(userId)) {

@@ -1,17 +1,13 @@
 package com.triptalk.triptalk.service;
 
-import com.triptalk.triptalk.domain.entity.Trip;
 import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.requestDto.UserRequestDto;
 import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
-import com.triptalk.triptalk.exception.NicknameDuplicationException;
+import com.triptalk.triptalk.exception.DuplicatedException;
 import com.triptalk.triptalk.repository.UserRepository;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -184,7 +180,7 @@ class UserServiceImplTest {
 
     // when & then
     assertThatThrownBy(() -> userService.modifyUserNickname(userId, newNick))
-            .isInstanceOf(NicknameDuplicationException.class)
+            .isInstanceOf(DuplicatedException.class)
             .hasMessage("이미 사용 중인 닉네임입니다.");
 
     verify(userRepository, never()).findById(anyLong());

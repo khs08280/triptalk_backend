@@ -4,6 +4,7 @@ import com.triptalk.triptalk.domain.entity.Expense;
 import com.triptalk.triptalk.domain.entity.Schedule;
 import com.triptalk.triptalk.dto.requestDto.ExpenseRequestDto;
 import com.triptalk.triptalk.dto.responseDto.ExpenseResponseDto;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.ExpenseRepository;
 import com.triptalk.triptalk.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class ExpenseService {
 
   public ExpenseResponseDto createExpense(ExpenseRequestDto requestDto) {
     Schedule schedule = scheduleRepository.findById(requestDto.getScheduleId())
-            .orElseThrow(() -> new IllegalArgumentException("해당 scheduleId가 존재하지 않습니다. id=" + requestDto.getScheduleId()));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 일정을 찾을 수 없습니다. Id=" + requestDto.getScheduleId()));
 
 
     Expense expense = Expense.builder()
@@ -40,7 +41,7 @@ public class ExpenseService {
   @Transactional(readOnly = true)
   public ExpenseResponseDto getExpense(Long expenseId) {
     Expense expense = expenseRepository.findById(expenseId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 Expense가 없습니다. id=" + expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 비용 데이터를 찾을 수 없습니다. Id=" + expenseId));
     return ExpenseResponseDto.fromEntity(expense);
   }
 
@@ -54,7 +55,7 @@ public class ExpenseService {
 
   public ExpenseResponseDto updateExpense(Long expenseId, ExpenseRequestDto requestDto) {
     Expense expense = expenseRepository.findById(expenseId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 Expense가 없습니다. id=" + expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException("해당 비용 데이터를 찾을 수 없습니다. Id=" + expenseId));
 
     expense = expense.updateDetails(requestDto);
 
@@ -62,7 +63,7 @@ public class ExpenseService {
   }
   public void deleteExpense(Long expenseId) {
     if (!expenseRepository.existsById(expenseId)) {
-      throw new IllegalArgumentException("삭제할 Expense가 없습니다. id=" + expenseId);
+      throw new ResourceNotFoundException("해당 비용 데이터를 찾을 수 없습니다. id=" + expenseId);
     }
     expenseRepository.deleteById(expenseId);
   }
