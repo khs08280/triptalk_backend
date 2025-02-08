@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +22,7 @@ import java.util.Collections;
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
 
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,10 +43,12 @@ public class User implements UserDetails {
   @Column(name = "profile_image_url", length = 255)
   private String profileImageUrl;
 
-  @Column(name = "created_at")
+  @Column(name = "created_at", nullable = false, updatable = false)
+  @CreatedDate
   private LocalDateTime createdAt;
 
   @Column(name = "updated_at")
+  @LastModifiedDate
   private LocalDateTime updatedAt;
 
   public void updateNickname(String newNickname) {

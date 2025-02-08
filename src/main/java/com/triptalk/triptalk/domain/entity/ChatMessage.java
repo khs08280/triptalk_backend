@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class ChatMessage {
 
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +34,7 @@ public class ChatMessage {
   @Column(name = "message", nullable = false, columnDefinition = "TEXT")
   private String message;
 
-  @Column(name = "sent_at", nullable = false)
+  @Column(name = "sent_at", nullable = false,updatable = false)
   @CreatedDate
   private LocalDateTime sentAt;
 

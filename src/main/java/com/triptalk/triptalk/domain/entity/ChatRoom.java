@@ -2,6 +2,8 @@ package com.triptalk.triptalk.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class ChatRoom {
 
   @Id
@@ -21,6 +24,7 @@ public class ChatRoom {
   @JoinColumn(name = "trip_id", nullable = false, unique = true)
   private Trip trip;
 
-  @Column(name = "created_at")
+  @Column(name = "created_at", nullable = false, updatable = false)
+  @CreatedDate
   private LocalDateTime createdAt;
 }

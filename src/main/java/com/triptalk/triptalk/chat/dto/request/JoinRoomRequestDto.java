@@ -6,5 +6,4 @@ import lombok.Getter;
 public class JoinRoomRequestDto {
   private Long roomId;
   private Long userId;
-  private String message;
 }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class ChatRoomUser {
 
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +30,7 @@ public class ChatRoomUser {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Column(name = "joined_at")
+  @Column(name = "joined_at", nullable = false, updatable = false)
   @CreatedDate
   private LocalDateTime joinedAt;
 }

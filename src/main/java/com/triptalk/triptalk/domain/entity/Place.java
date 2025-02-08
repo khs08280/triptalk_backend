@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Place {
 
   @Id
@@ -78,7 +80,7 @@ public class Place {
   @Column(name = "opening_hours")
   private String openingHours;
 
-  @Column(name = "created_at")
+  @Column(name = "created_at", nullable = false, updatable = false)
   @CreatedDate
   private LocalDateTime createdAt;
 

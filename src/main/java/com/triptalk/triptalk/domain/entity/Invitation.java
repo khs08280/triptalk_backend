@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Invitation {
 
   @Id
@@ -37,11 +41,14 @@ public class Invitation {
   @Column(name = "status", nullable = false, length = 20)
   private InvitationStatus status;
 
-  @Column(name = "created_at")
+  @Column(name = "created_at", nullable = false, updatable = false)
+  @CreatedDate
   private LocalDateTime createdAt;
 
   @Column(name = "updated_at")
+  @LastModifiedDate
   private LocalDateTime updatedAt;
+
 
   @Column(name = "responded_at")
   private LocalDateTime respondedAt;

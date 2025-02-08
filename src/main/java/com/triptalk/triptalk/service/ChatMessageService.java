@@ -60,7 +60,6 @@ public class ChatMessageService {
             .chatRoom(chatRoom)
             .sender(user)
             .message(message)
-            .sentAt(LocalDateTime.now())
             .build();
 
     return ChatMessageResponseDto.fromEntity(chatMessageRepository.save(chatMessage));
