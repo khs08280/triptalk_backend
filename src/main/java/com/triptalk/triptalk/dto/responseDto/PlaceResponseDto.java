@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 public class PlaceResponseDto {
 
-  private String placeId;
+  private Long id;
   private String naverPlaceId;
   private String googlePlaceId;
   private PlaceType placeType;
@@ -31,7 +31,7 @@ public class PlaceResponseDto {
 
   public static PlaceResponseDto fromEntity(Place place) {
     return PlaceResponseDto.builder()
-            .placeId(place.getPlaceId().toString())
+            .id(place.getId())
             .googlePlaceId(place.getGooglePlaceId())
             .placeType(place.getPlaceType())
             .name(place.getName())

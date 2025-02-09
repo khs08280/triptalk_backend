@@ -7,6 +7,7 @@ import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.domain.enums.Visibility;
 import com.triptalk.triptalk.dto.requestDto.TripRequestDto;
 import com.triptalk.triptalk.dto.responseDto.TripResponseDto;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.ChatRoomRepository;
 import com.triptalk.triptalk.repository.ChatRoomUserRepository;
 import com.triptalk.triptalk.repository.TripRepository;
@@ -194,7 +195,7 @@ public class TripServiceTest {
             .willReturn(Optional.empty());
 
     // when & then
-    assertThrows(EntityNotFoundException.class, () -> {
+    assertThrows(ResourceNotFoundException.class, () -> {
       tripService.modifyTrip(OTHER_TRIP_ID, requestDto, USER_ID);
     });
   }
@@ -239,7 +240,7 @@ public class TripServiceTest {
             .willReturn(Optional.empty());
 
     // when & then
-    assertThrows(EntityNotFoundException.class, () -> {
+    assertThrows(ResourceNotFoundException.class, () -> {
       tripService.getTripById(OTHER_TRIP_ID);
     });
   }
@@ -268,7 +269,7 @@ public class TripServiceTest {
             .willReturn(Optional.empty());
 
     // when & then
-    assertThrows(EntityNotFoundException.class, () -> {
+    assertThrows(ResourceNotFoundException.class, () -> {
       tripService.removeTripById(OTHER_TRIP_ID, USER_ID);
     });
   }

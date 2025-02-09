@@ -4,6 +4,7 @@ import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.requestDto.UserRequestDto;
 import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.exception.DuplicatedException;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -81,7 +82,7 @@ class UserServiceImplTest {
     given(userRepository.existsByUsername("테스트테스트123")).willReturn(true);
 
     assertThatThrownBy(()-> userService.saveUser(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(DuplicatedException.class)
             .hasMessage("해당 아이디가 이미 존재합니다.");
 
     verify(userRepository).existsByUsername("테스트테스트123");
@@ -103,7 +104,7 @@ class UserServiceImplTest {
     given(userRepository.existsByUsername("테스트테스트123")).willReturn(false);
     given(userRepository.existsByEmail("testtest123@tetete.com")).willReturn(true);
 
-    assertThatThrownBy(()-> userService.saveUser(request)).isInstanceOf(IllegalArgumentException.class).hasMessage("해당 이메일이 이미 존재합니다.");
+    assertThatThrownBy(()-> userService.saveUser(request)).isInstanceOf(DuplicatedException.class).hasMessage("해당 이메일이 이미 존재합니다.");
 
     verify(userRepository).existsByUsername("테스트테스트123");
     verify(userRepository).existsByEmail("testtest123@tetete.com");
@@ -163,7 +164,7 @@ class UserServiceImplTest {
 
     // when & then
     assertThatThrownBy(() -> userService.modifyUserProfileUrl(userId, "anyUrl"))
-            .isInstanceOf(UsernameNotFoundException.class)
+            .isInstanceOf(ResourceNotFoundException.class)
             .hasMessage("해당 유저를 찾지 못했습니다.");
 
     verify(userRepository).findById(userId);
@@ -200,7 +201,7 @@ class UserServiceImplTest {
 
     // when & then
     assertThatThrownBy(() -> userService.modifyUserNickname(userId, newNick))
-            .isInstanceOf(UsernameNotFoundException.class)
+            .isInstanceOf(ResourceNotFoundException.class)
             .hasMessage("해당 유저를 찾지 못했습니다.");
 
     verify(userRepository).existsByNickname(newNick);
@@ -257,7 +258,7 @@ class UserServiceImplTest {
 
     // when & then
     assertThatThrownBy(() -> userService.getUser(userId))
-            .isInstanceOf(UsernameNotFoundException.class)
+            .isInstanceOf(ResourceNotFoundException.class)
             .hasMessage("해당 유저를 찾지 못했습니다.");
 
     verify(userRepository).findById(userId);
@@ -289,7 +290,7 @@ class UserServiceImplTest {
 
     // when & then
     assertThatThrownBy(() -> userService.deleteUser(username))
-            .isInstanceOf(UsernameNotFoundException.class)
+            .isInstanceOf(ResourceNotFoundException.class)
             .hasMessage("해당 유저를 찾지 못했습니다.");
 
     verify(userRepository).findByUsername(username);
@@ -325,7 +326,7 @@ class UserServiceImplTest {
 
     // when & then
     assertThatThrownBy(() -> userService.loadUserByUsername(username))
-            .isInstanceOf(UsernameNotFoundException.class)
+            .isInstanceOf(ResourceNotFoundException.class)
             .hasMessage("해당 유저를 찾지 못했습니다.");
 
     verify(userRepository).findByUsername(username);

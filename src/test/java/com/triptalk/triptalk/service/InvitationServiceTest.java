@@ -10,6 +10,7 @@ import static org.mockito.Mockito.*;
 import com.triptalk.triptalk.domain.entity.*;
 import com.triptalk.triptalk.domain.enums.InvitationStatus;
 import com.triptalk.triptalk.dto.responseDto.InvitationResponseDto;
+import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -147,7 +148,7 @@ class InvitationServiceTest {
     // when & then
     assertThatThrownBy(() ->
             invitationService.sendInvitation(tripId, inviterId, invitedNickname))
-            .isInstanceOf(EntityNotFoundException.class)
+            .isInstanceOf(ResourceNotFoundException.class)
             .hasMessage("해당 여행을 찾을 수 없습니다.");
   }
 
@@ -253,7 +254,7 @@ class InvitationServiceTest {
 
     // when & then
     assertThatThrownBy(() -> invitationService.rejectInvitation(invitationId, userId))
-            .isInstanceOf(EntityNotFoundException.class)
+            .isInstanceOf(ResourceNotFoundException.class)
             .hasMessageContaining("초대 정보를 찾을 수 없습니다."); // 원하는 대로 메시지를 검증
   }
 }

@@ -19,7 +19,7 @@ public class PlaceService {
   @Transactional
   public Place getOrCreatePlace(ScheduleRequestDto scheduleRequestDto) {
     if (scheduleRequestDto.getPlaceId() != null) {
-      Optional<Place> existingPlace = placeRepository.findById(Long.parseLong(scheduleRequestDto.getPlaceId()));
+      Optional<Place> existingPlace = placeRepository.findById(scheduleRequestDto.getPlaceId());
       if (existingPlace.isPresent()) {
         return existingPlace.get();
       }

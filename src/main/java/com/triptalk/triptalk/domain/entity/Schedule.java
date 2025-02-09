@@ -1,5 +1,6 @@
 package com.triptalk.triptalk.domain.entity;
 
+import com.triptalk.triptalk.domain.enums.PlaceType;
 import com.triptalk.triptalk.dto.requestDto.ScheduleRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
@@ -56,6 +57,13 @@ public class Schedule {
   private LocalDateTime updatedAt;
 
   public Schedule updateDetails(ScheduleRequestDto requestDto) {
+    if(requestDto.getPlace() != null){
+      Place place = Place.builder()
+              .name(requestDto.getName())
+              .address(requestDto.getPlace().getAddress())
+              .build();
+    }
+
     return Schedule.builder()
             .id(this.id)
             .trip(this.trip)
@@ -64,6 +72,7 @@ public class Schedule {
             .startTime(requestDto.getStartTime())
             .endTime(requestDto.getEndTime())
             .memo(requestDto.getMemo())
+            .place(place)
             .createdAt(this.createdAt)
             .updatedAt(this.updatedAt)
             .build();

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Optional;
 
 @Getter
 @NoArgsConstructor
@@ -19,6 +20,7 @@ public class ScheduleResponseDto {
   private Long id;
   private Long tripId;            // Schedule과 연관된 Trip의 ID만 노출
   private LocalDate date;
+  private String name;
   private PlaceResponseDto placeResponseDto;
   private LocalTime startTime;
   private LocalTime endTime;
@@ -34,7 +36,8 @@ public class ScheduleResponseDto {
             .id(schedule.getId())
             .tripId(schedule.getTrip().getId())
             .date(schedule.getDate())
-            .placeResponseDto(PlaceResponseDto.fromEntity(schedule.getPlace()))
+            .name(schedule.getName())
+            .placeResponseDto(Optional.ofNullable(schedule.getPlace()).map(PlaceResponseDto::fromEntity).orElse(null))
             .startTime(schedule.getStartTime())
             .endTime(schedule.getEndTime())
             .memo(schedule.getMemo())

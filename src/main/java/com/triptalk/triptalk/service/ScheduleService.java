@@ -13,6 +13,7 @@ import com.triptalk.triptalk.repository.ScheduleRepository;
 import com.triptalk.triptalk.repository.TripRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ScheduleService {
 
   private final ScheduleRepository scheduleRepository;
@@ -51,7 +53,9 @@ public class ScheduleService {
     } else {
       throw new BadRequestException("잘못된 장소 타입입니다.");
     }
-    return ScheduleResponseDto.fromEntity(scheduleRepository.save(schedule));
+    Schedule save = scheduleRepository.save(schedule);
+    log.info("저장되는 객체:{}", save.getName());
+    return ScheduleResponseDto.fromEntity(save);
   }
 
   @Transactional(readOnly = true)

@@ -22,8 +22,7 @@ public class Place {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "place_id")
-  private Long placeId;
+  private Long id;
 
 //  @Column(name = "naver_place_id", length = 255)
 //  private String naverPlaceId;

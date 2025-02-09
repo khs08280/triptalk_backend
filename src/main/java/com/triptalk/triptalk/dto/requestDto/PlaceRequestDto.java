@@ -1,12 +1,14 @@
 package com.triptalk.triptalk.dto.requestDto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class PlaceRequestDto {
   // 네이버 검색 API를 이용한 경우
   private String category;
