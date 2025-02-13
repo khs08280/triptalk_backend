@@ -3,11 +3,14 @@ package com.triptalk.triptalk.service;
 import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.dto.requestDto.UserRequestDto;
+import com.triptalk.triptalk.exception.BadRequestException;
 import com.triptalk.triptalk.exception.DuplicatedException;
 import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +39,15 @@ public class UserServiceImpl implements UserService {
     return allUsers.stream()
             .map(UserResponseDto::fromEntity)
             .collect(Collectors.toList());
+  }
+
+  public UserResponseDto saveRefreshToken(String username, String refreshToken){
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾을 수 없습니다."));
+    user.updateRefreshToken(refreshToken);
+    userRepository.save(user);
+
+    return UserResponseDto.fromEntity(user);
   }
 
   @Override
@@ -73,6 +85,10 @@ public class UserServiceImpl implements UserService {
       throw new DuplicatedException(("해당 이메일이 이미 존재합니다."));
     }
 
+    if(!userDto.getPassword().equals(userDto.getConfirmPassword())){
+      throw new BadRequestException("비밀번호와 비밀번호 확인이 같지 않습니다.");
+    }
+
     User user = User.builder()
             .username(userDto.getUsername())
             .nickname(userDto.getNickname())
@@ -108,4 +124,39 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(()-> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
   }
 
+  public String refreshAccessToken(String refreshTokenFromCookie) {
+
+    // (1) 토큰 서명/만료 검증
+    jwtService.validateToken(refreshTokenFromCookie);
+    String username = jwtService.extractUsername(refreshTokenFromCookie);
+
+    // (2) DB에서 해당 유저 조회 및 refreshToken 비교
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResourceNotFoundException("유저를 찾을 수 없습니다."));
+
+    if (!refreshTokenFromCookie.equals(user.getRefreshToken())) {
+      throw new IllegalStateException("Refresh Token 불일치 (이미 로그아웃되었거나, 다른 기기에서 재발급됨)");
+    }
+
+    // (3) 새 Access Token 발급
+    return jwtService.generateAccessToken(username);
+  }
+
+  public void logoutUser(Authentication authentication) {
+    if (authentication != null && authentication.isAuthenticated()) {
+      String username = authentication.getName();
+      log.info("{} 사용자가 로그아웃 요청", username);
+
+      // DB에서 refreshToken 제거
+      userRepository.findByUsername(username).ifPresent(user -> {
+        user.clearRefreshToken();
+        userRepository.save(user);
+      });
+    } else {
+      log.info("익명 사용자가 로그아웃 요청");
+    }
+
+    // SecurityContextHolder 초기화
+    SecurityContextHolder.clearContext();
+  }
 }

@@ -9,7 +9,9 @@ import com.triptalk.triptalk.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,16 +32,32 @@ public class UserController {
 
   @PostMapping("/logout")
   public ResponseEntity<ApiResponse<String>> logout(Authentication authentication) {
-    if (authentication != null && authentication.isAuthenticated()) {
-      String username = authentication.getName();
-      log.info("{} 사용자가 로그아웃 되었습니다.", username);
-    } else {
-      log.info("익명 사용자가 로그아웃 되었습니다.");
-    }
+    // 1) Service 계층에 로그아웃(비즈니스 로직) 위임
+    userService.logoutUser(authentication);
 
-    SecurityContextHolder.clearContext();
-    return ResponseEntity.ok(ApiResponse.success("로그아웃 성공", null));
+    // 2) 쿠키 만료(Access/Refresh 둘 다)
+    ResponseCookie accessCookie = ResponseCookie.from("accessToken", "")
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .sameSite("None")
+            .maxAge(0)
+            .build();
+
+    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .sameSite("None")
+            .maxAge(0)
+            .build();
+
+    return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+            .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+            .body(ApiResponse.success("로그아웃 성공", null));
   }
+
 
   @DeleteMapping
   public ResponseEntity<ApiResponse<String>> deleteUser(@AuthenticationPrincipal UserDetails userDetails){

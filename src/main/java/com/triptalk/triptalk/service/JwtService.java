@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -29,8 +28,11 @@ public class JwtService {
   @Value("${jwt.secret}")
   private String SECRET_KEY;
 
-  @Value("${jwt.expiration}")
-  private Long EXPIRATION_TIME;
+  @Value("${jwt.expiration}") // 15분
+  private Long ACCESS_TOKEN_EXPIRATION;
+
+  @Value("${jwt.refresh-expiration}") // 14일
+  private Long REFRESH_TOKEN_EXPIRATION;
 
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
@@ -67,24 +69,38 @@ public class JwtService {
   }
 
 
-  public String generateToken(String username) {
-    if (EXPIRATION_TIME == null || EXPIRATION_TIME <= 0) {
-      throw new IllegalArgumentException("Expiration time is not set correctly.");
+  public String generateAccessToken(String username) {
+    if (ACCESS_TOKEN_EXPIRATION == null || ACCESS_TOKEN_EXPIRATION <= 0) {
+      throw new IllegalArgumentException("AccessToken 만료시간 설정이 잘못되었습니다.");
     }
-    User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾을 수 없습니다."));
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾을 수 없습니다."));
 
     Map<String, Object> claims = new HashMap<>();
-    claims.put("userId",user.getId());
-    return createToken(claims, username);
+    claims.put("userId", user.getId());
+
+    return createToken(claims, username, ACCESS_TOKEN_EXPIRATION);
+  }
+  public String generateRefreshToken(String username) {
+    if (REFRESH_TOKEN_EXPIRATION == null || REFRESH_TOKEN_EXPIRATION <= 0) {
+      throw new IllegalArgumentException("RefreshToken 만료시간 설정이 잘못되었습니다.");
+    }
+    // Refresh Token은 굳이 많은 클레임을 넣지 않는 경우가 많음
+    // username(또는 userId) 정도만
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("typ", "refresh"); // 토큰 타입 구분용(선택)
+
+    return createToken(claims, username, REFRESH_TOKEN_EXPIRATION);
   }
 
-  private String createToken(Map<String, Object> claims, String userName) {
+  private String createToken(Map<String, Object> claims, String subject, Long expireTimeMillis) {
     return Jwts.builder()
             .setClaims(claims)
-            .setSubject(userName)
+            .setSubject(subject)
             .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-            .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+            .setExpiration(new Date(System.currentTimeMillis() + expireTimeMillis))
+            .signWith(getSignKey(), SignatureAlgorithm.HS256)
+            .compact();
   }
 
   public Boolean isTokenValid(String token, UserDetails userDetails) {
@@ -97,17 +113,6 @@ public class JwtService {
     }
   }
 
-//  public void validateToken(String token, UserDetails userDetails){
-//    try {
-//      final String username = extractUsername(token);
-//      // 원하는 조건(서명, 만료여부 등)
-//      if (!username.equals(userDetails.getUsername()) || isTokenExpired(token)) {
-//        throw new JwtException("토큰 검증 실패");
-//      }
-//    } catch (Exception e) {
-//      throw new JwtException("토큰 파싱/서명 검증 에러", e);
-//    }
-//  }
 public void validateToken(String token) {
   try {
     // parseClaimsJws: 서명 검증 + 만료 시간 검증

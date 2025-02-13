@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthRequestDto {
+public class LoginRequestDto {
 
   @NotBlank(message = "ID는 필수 값입니다.")
   private String username;

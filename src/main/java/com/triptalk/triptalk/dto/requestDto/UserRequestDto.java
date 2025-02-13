@@ -29,11 +29,7 @@ public class UserRequestDto {
   @Size(min = 8, message = "비밀번호는 적어도 8자 이상이어야 합니다.")
   private String password;
 
-  public static UserRequestDto fromEntity(User user) {
-    return UserRequestDto.builder()
-            .username(user.getUsername())
-            .nickname(user.getNickname())
-            .email(user.getEmail())
-            .build();
-  }
+  @NotBlank(message = "비밀번호 확인은 필수 값입니다.")
+  private String confirmPassword;
+
 }

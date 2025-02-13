@@ -10,6 +10,8 @@ import lombok.Data;
 @Builder
 public class UserResponseDto {
 
+  private Long id;
+
   private String username;
 
   private String nickname;
@@ -18,6 +20,7 @@ public class UserResponseDto {
 
   public static UserResponseDto fromEntity(User user) {
     return UserResponseDto.builder()
+            .id(user.getId())
             .username(user.getUsername())
             .nickname(user.getNickname())
             .email(user.getEmail())

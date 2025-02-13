@@ -2,13 +2,10 @@ package com.triptalk.triptalk.service;
 
 import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -106,7 +103,7 @@ class JwtServiceTest {
     when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
 
     // When
-    String token = jwtService.generateToken(username);
+    String token = jwtService.generateAccessToken(username);
 
     // Then
     assertThat(token).isNotNull();

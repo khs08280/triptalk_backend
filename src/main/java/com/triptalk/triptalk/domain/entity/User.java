@@ -51,6 +51,17 @@ public class User implements UserDetails {
   @LastModifiedDate
   private LocalDateTime updatedAt;
 
+  @Column(name = "refresh_token", length = 500)
+  private String refreshToken;
+
+  public void updateRefreshToken(String refreshToken) {
+    this.refreshToken = refreshToken;
+  }
+
+  public void clearRefreshToken() {
+    this.refreshToken = null;
+  }
+
   public void updateNickname(String newNickname) {
     this.nickname = newNickname;
   }
