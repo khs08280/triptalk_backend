@@ -32,6 +32,14 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.error(e.getMessage()));
   }
 
+  @ExceptionHandler(InvalidTokenException.class)
+  public ResponseEntity<ApiResponse<?>> handleInvalidTokenException(InvalidTokenException e) {
+    log.error("쿠키가 없거나 오류가 발생 : {}", e.getMessage(), e);
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(e.getMessage()));
+  }
+
   @ExceptionHandler(IllegalStateException.class)
   public ResponseEntity<ApiResponse<?>> handleIllegalStateException(IllegalStateException e) {
     log.error("잘못된 요청 : {}", e.getMessage(), e);

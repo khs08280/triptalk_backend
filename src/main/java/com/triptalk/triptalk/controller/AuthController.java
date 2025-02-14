@@ -4,6 +4,7 @@ import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.requestDto.LoginRequestDto;
 import com.triptalk.triptalk.dto.requestDto.UserRequestDto;
 import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
+import com.triptalk.triptalk.exception.InvalidTokenException;
 import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.service.JwtService;
 import com.triptalk.triptalk.service.UserService;
@@ -59,7 +60,7 @@ public class AuthController {
     String refreshToken = jwtService.generateRefreshToken(username);
 
     // == (중요) 생성된 Refresh Token을 User 엔티티에 저장 ==
-    UserResponseDto user = userService.saveRefreshToken(username,refreshToken);
+    UserResponseDto user = userService.saveRefreshToken(username, refreshToken);
 
     // 3. HTTP-Only 쿠키로 내려주기 (Spring 5+ ResponseCookie)
     ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
@@ -108,7 +109,7 @@ public class AuthController {
 
     try {
       // 2) 서비스 계층에서 비즈니스 로직 처리 (검증, DB조회, 새 Access Token 생성)
-      String newAccessToken = userService.refreshAccessToken(refreshTokenFromCookie);
+      String newAccessToken = jwtService.refreshAccessToken(refreshTokenFromCookie);
 
       // 3) 새 Access Token 쿠키 생성
       ResponseCookie newAccessCookie = ResponseCookie.from("accessToken", newAccessToken)
@@ -131,4 +132,27 @@ public class AuthController {
     }
   }
 
+  @GetMapping("/check")
+  public ResponseEntity<ApiResponse<UserResponseDto>> checkToken(HttpServletRequest request){
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) {
+      throw new InvalidTokenException("accessToken 쿠키가 없습니다.");
+    }
+
+    String accessToken = null;
+    for (Cookie cookie : cookies) {
+      if ("accessToken".equals(cookie.getName())) {
+        accessToken = cookie.getValue();
+        break;
+      }
+    }
+    if (accessToken == null) {
+      throw new InvalidTokenException("accessToken 쿠키가 없습니다.");
+    }
+
+    jwtService.validateToken(accessToken);
+    UserResponseDto user = jwtService.tokenToUserDto(accessToken);
+
+    return ResponseEntity.ok(ApiResponse.success(user));
+  }
 }

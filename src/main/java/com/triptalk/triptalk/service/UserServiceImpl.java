@@ -124,24 +124,6 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(()-> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
   }
 
-  public String refreshAccessToken(String refreshTokenFromCookie) {
-
-    // (1) 토큰 서명/만료 검증
-    jwtService.validateToken(refreshTokenFromCookie);
-    String username = jwtService.extractUsername(refreshTokenFromCookie);
-
-    // (2) DB에서 해당 유저 조회 및 refreshToken 비교
-    User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new ResourceNotFoundException("유저를 찾을 수 없습니다."));
-
-    if (!refreshTokenFromCookie.equals(user.getRefreshToken())) {
-      throw new IllegalStateException("Refresh Token 불일치 (이미 로그아웃되었거나, 다른 기기에서 재발급됨)");
-    }
-
-    // (3) 새 Access Token 발급
-    return jwtService.generateAccessToken(username);
-  }
-
   public void logoutUser(Authentication authentication) {
     if (authentication != null && authentication.isAuthenticated()) {
       String username = authentication.getName();

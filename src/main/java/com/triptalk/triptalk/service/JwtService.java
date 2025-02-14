@@ -1,6 +1,7 @@
 package com.triptalk.triptalk.service;
 
 import com.triptalk.triptalk.domain.entity.User;
+import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.UserRepository;
 import io.jsonwebtoken.*;
@@ -68,6 +69,11 @@ public class JwtService {
     return extractExpiration(token).before(new Date());
   }
 
+  public UserResponseDto tokenToUserDto(String token){
+    String username = extractUsername(token);
+    User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾을 수 없습니다."));
+    return UserResponseDto.fromEntity(user);
+  }
 
   public String generateAccessToken(String username) {
     if (ACCESS_TOKEN_EXPIRATION == null || ACCESS_TOKEN_EXPIRATION <= 0) {
@@ -101,6 +107,24 @@ public class JwtService {
             .setExpiration(new Date(System.currentTimeMillis() + expireTimeMillis))
             .signWith(getSignKey(), SignatureAlgorithm.HS256)
             .compact();
+  }
+
+  public String refreshAccessToken(String refreshTokenFromCookie) {
+
+    // (1) 토큰 서명/만료 검증
+    validateToken(refreshTokenFromCookie);
+    String username = extractUsername(refreshTokenFromCookie);
+
+    // (2) DB에서 해당 유저 조회 및 refreshToken 비교
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResourceNotFoundException("유저를 찾을 수 없습니다."));
+
+    if (!refreshTokenFromCookie.equals(user.getRefreshToken())) {
+      throw new IllegalStateException("Refresh Token 불일치 (이미 로그아웃되었거나, 다른 기기에서 재발급됨)");
+    }
+
+    // (3) 새 Access Token 발급
+    return generateAccessToken(username);
   }
 
   public Boolean isTokenValid(String token, UserDetails userDetails) {
