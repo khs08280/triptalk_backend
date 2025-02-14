@@ -155,4 +155,28 @@ public class AuthController {
 
     return ResponseEntity.ok(ApiResponse.success(user));
   }
+
+  @GetMapping("/checkLogin")
+  public ResponseEntity<ApiResponse<UserResponseDto>> checkLogin(HttpServletRequest request){
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) {
+      throw new InvalidTokenException("accessToken 쿠키가 없습니다.");
+    }
+
+    String accessToken = null;
+    for (Cookie cookie : cookies) {
+      if ("accessToken".equals(cookie.getName())) {
+        accessToken = cookie.getValue();
+        break;
+      }
+    }
+    if (accessToken == null) {
+      throw new InvalidTokenException("accessToken 쿠키가 없습니다.");
+    }
+
+    jwtService.validateToken(accessToken);
+    UserResponseDto user = jwtService.tokenToUserDto(accessToken);
+
+    return ResponseEntity.ok(ApiResponse.success(user));
+  }
 }
