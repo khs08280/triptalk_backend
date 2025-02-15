@@ -72,6 +72,7 @@ public class JwtService {
   public UserResponseDto tokenToUserDto(String token){
     String username = extractUsername(token);
     User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾을 수 없습니다."));
+    log.info("11");
     return UserResponseDto.fromEntity(user);
   }
 

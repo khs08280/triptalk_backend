@@ -152,7 +152,6 @@ public class AuthController {
 
     jwtService.validateToken(accessToken);
     UserResponseDto user = jwtService.tokenToUserDto(accessToken);
-
     return ResponseEntity.ok(ApiResponse.success(user));
   }
 
