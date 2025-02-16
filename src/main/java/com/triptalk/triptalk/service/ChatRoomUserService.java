@@ -4,6 +4,7 @@ import com.triptalk.triptalk.domain.entity.ChatRoom;
 import com.triptalk.triptalk.domain.entity.ChatRoomUser;
 import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.responseDto.ChatRoomResponseDto;
+import com.triptalk.triptalk.exception.InvalidTokenException;
 import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.ChatRoomRepository;
 import com.triptalk.triptalk.repository.ChatRoomUserRepository;
@@ -62,7 +63,7 @@ public class ChatRoomUserService {
 
   public List<ChatRoomResponseDto> findChatRoomList(User user){
     if (user == null) {
-      throw new IllegalArgumentException("User 객체는 null일 수 없습니다.");
+      throw new InvalidTokenException("User 객체는 null일 수 없습니다.");
     }
 
     List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsAndTripByUser(user);
@@ -76,6 +77,7 @@ public class ChatRoomUserService {
                     .chatRoomId(chatRoom.getId())
                     .tripId(chatRoom.getTrip().getId())
                     .title(chatRoom.getTrip().getTitle()) // Trip의 title 사용
+                    .location(chatRoom.getTrip().getLocation())
                     .build())
             .collect(Collectors.toList());
   }
