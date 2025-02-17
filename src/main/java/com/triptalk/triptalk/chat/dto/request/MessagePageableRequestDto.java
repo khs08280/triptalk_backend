@@ -7,5 +7,4 @@ public class MessagePageableRequestDto {
   public Long roomId;
   public Long userId;
   public int page;
-  public int size;
 }

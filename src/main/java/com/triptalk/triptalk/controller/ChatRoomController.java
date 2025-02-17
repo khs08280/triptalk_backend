@@ -1,7 +1,6 @@
 package com.triptalk.triptalk.controller;
 
 
-import com.triptalk.triptalk.domain.entity.ChatRoom;
 import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.responseDto.ApiResponse;
 import com.triptalk.triptalk.dto.responseDto.ChatRoomResponseDto;
@@ -20,7 +19,7 @@ import java.util.List;
 @RequestMapping("/api/v1/chatRooms")
 @RequiredArgsConstructor
 @Slf4j
-public class ChatController {
+public class ChatRoomController {
 
   private final ChatRoomUserService chatRoomUserService;
 
@@ -31,4 +30,5 @@ public class ChatController {
 
     return ResponseEntity.ok(ApiResponse.success(chatRoomList));
   }
+
 }

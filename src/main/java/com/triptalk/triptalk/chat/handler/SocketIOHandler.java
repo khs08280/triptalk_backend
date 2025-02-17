@@ -4,6 +4,7 @@ import com.corundumstudio.socketio.HandshakeData;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.triptalk.triptalk.chat.dto.MessagesResponseDto;
 import com.triptalk.triptalk.chat.dto.request.ChatMessageRequestDto;
 import com.triptalk.triptalk.chat.dto.request.JoinRoomRequestDto;
 import com.triptalk.triptalk.chat.dto.request.MessagePageableRequestDto;
@@ -37,14 +38,19 @@ public class SocketIOHandler {
     socketIOServer.addConnectListener(client -> {
       HandshakeData handshakeData = client.getHandshakeData();
 
-      // (A) 쿼리 파라미터에서 토큰 가져오기
-//      String token = handshakeData.getSingleUrlParam("token");
+      String[] cookieHeaders = handshakeData.getHttpHeaders().get("cookie").split(";");
       String token = null;
-      // (B) 혹은 HTTP 헤더에서 가져오기 (권장)
-       String authHeader = handshakeData.getHttpHeaders().get("Authorization");
-       if (authHeader != null && authHeader.startsWith("Bearer ")) {
-           token = authHeader.substring(7);
-       }
+      for (String header : cookieHeaders) {
+        String[] cookies = header.split(";");
+        for (String cookie : cookies) {
+          String[] pair = cookie.trim().split("=");
+          if (pair.length == 2 && "accessToken".equals(pair[0])) {
+            token = pair[1];
+            break;
+          }
+        }
+      }
+      log.info("accessToken: {}", token);
 
       if (token == null || token.isEmpty()) {
         log.warn("⛔ 토큰이 전송되지 않음 - 소켓 연결 거부");
@@ -83,7 +89,7 @@ public class SocketIOHandler {
 
       if (isExistingUser) {
         log.info("기존 유저 {}가 채팅방 {}에 재접속", data.getUserId(), data.getRoomId());
-        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId(), 50);
+        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId());
         client.sendEvent("load_old_messages", lastMessages);
       } else {
         log.info("새로운 유저 {}가 채팅방 {}에 참여", data.getUserId(), data.getRoomId());
@@ -92,8 +98,8 @@ public class SocketIOHandler {
 
         chatRoomUserService.addUserToRoom(data.getUserId(), data.getRoomId());
 
-        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId(), 50);
-        client.sendEvent("last_messages", lastMessages);
+//        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId(), 50);
+//        client.sendEvent("load_old_messages", lastMessages);
       }
     });
 
@@ -101,8 +107,8 @@ public class SocketIOHandler {
       client.joinRoom(String.valueOf(data.getRoomId()));
       boolean isExistingUser = chatRoomUserService.isUserInRoom(data.getUserId(), data.getRoomId());
 
-      List<ChatMessage> lastMessages = chatMessageService.getMoreMessages(data.getRoomId(), data.getPage(), data.getSize());
-      client.sendEvent("last_messages", lastMessages);
+      MessagesResponseDto lastMessages = chatMessageService.getMoreMessages(data.getRoomId(), data.getPage(), 50);
+      client.sendEvent("get_more_messages", lastMessages);
     });
 
     socketIOServer.addEventListener("out_room", JoinRoomRequestDto.class, (client, data, ackRequest) -> {

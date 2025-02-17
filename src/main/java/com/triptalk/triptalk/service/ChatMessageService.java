@@ -1,5 +1,6 @@
 package com.triptalk.triptalk.service;
 
+import com.triptalk.triptalk.chat.dto.MessagesResponseDto;
 import com.triptalk.triptalk.chat.dto.response.ChatMessageResponseDto;
 import com.triptalk.triptalk.domain.entity.ChatMessage;
 import com.triptalk.triptalk.domain.entity.ChatRoom;
@@ -9,13 +10,13 @@ import com.triptalk.triptalk.repository.ChatMessageRepository;
 import com.triptalk.triptalk.repository.ChatRoomRepository;
 import com.triptalk.triptalk.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,13 +30,14 @@ public class ChatMessageService {
   private final UserRepository userRepository;
 
   @Transactional(readOnly = true)
-  public List<ChatMessageResponseDto> getLastMessages(Long roomId, int size) {
+  public List<ChatMessageResponseDto> getLastMessages(Long roomId) {
     if(!chatRoomRepository.existsById(roomId)){
       throw new ResourceNotFoundException("해당 채팅방이 존재하지 않습니다. Id: " + roomId);
     }
 
-    Pageable pageable = PageRequest.of(0, size);
-    List<ChatMessage> messages = chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(roomId, pageable).getContent();
+    List<ChatMessage> messages = chatMessageRepository.findTop50ByChatRoomIdOrderBySentAtDesc(roomId);
+
+    Collections.reverse(messages);
 
     return messages.stream()
             .map(ChatMessageResponseDto::fromEntity)
@@ -43,13 +45,23 @@ public class ChatMessageService {
   }
 
   @Transactional(readOnly = true)
-  public List<ChatMessage> getMoreMessages(Long roomId, int page, int size) {
+  public MessagesResponseDto getMoreMessages(Long roomId, int page, int size) {
     if (!chatRoomRepository.existsById(roomId)) {
       throw new ResourceNotFoundException("해당 채팅방이 존재하지 않습니다. Id: " + roomId);
     }
 
     Pageable pageable = PageRequest.of(page, size);
-    return chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(roomId, pageable).getContent();
+    Page<ChatMessage> pageResult = chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(roomId, pageable);
+
+    List<ChatMessageResponseDto> messages = pageResult.getContent()
+            .stream()
+            .map(ChatMessageResponseDto::fromEntity)
+            .collect(Collectors.toList());
+    Collections.reverse(messages);
+
+    Integer nextPage = pageResult.hasNext() ? page + 1 : null;
+
+    return new MessagesResponseDto(messages, nextPage);
   }
 
   public ChatMessageResponseDto saveMessage(Long senderId, Long roomId, String message) {

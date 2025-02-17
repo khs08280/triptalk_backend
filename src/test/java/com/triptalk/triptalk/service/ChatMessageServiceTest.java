@@ -16,13 +16,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,13 +68,11 @@ class ChatMessageServiceTest {
 
     List<ChatMessage> messages = Arrays.asList(message1, message2);
 
-    Page<ChatMessage> messagePage = new PageImpl<>(messages);
-
     when(chatRoomRepository.existsById(roomId)).thenReturn(true);
-    when(chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(eq(roomId), any(Pageable.class))).thenReturn(messagePage);
+    when(chatMessageRepository.findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId))).thenReturn(messages);
 
     // When
-    List<ChatMessageResponseDto> result = chatMessageService.getLastMessages(roomId, size);
+    List<ChatMessageResponseDto> result = chatMessageService.getLastMessages(roomId);
 
     // Then
     assertThat(result).isNotNull();
@@ -85,7 +80,7 @@ class ChatMessageServiceTest {
     assertThat(result.get(0).getMessage()).isEqualTo("Message 1");
     assertThat(result.get(1).getMessage()).isEqualTo("Message 2");
     verify(chatRoomRepository, times(1)).existsById(roomId);
-    verify(chatMessageRepository, times(1)).findByChatRoomIdOrderBySentAtDesc(eq(roomId), any(Pageable.class));
+    verify(chatMessageRepository, times(1)).findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId));
   }
 
   @Test
@@ -98,12 +93,12 @@ class ChatMessageServiceTest {
     when(chatRoomRepository.existsById(nonExistentRoomId)).thenReturn(false);
 
     // When & Then
-    assertThatThrownBy(() -> chatMessageService.getLastMessages(nonExistentRoomId, size))
+    assertThatThrownBy(() -> chatMessageService.getLastMessages(nonExistentRoomId))
             .isInstanceOf(ResourceNotFoundException.class)
             .hasMessageContaining("해당 채팅방이 존재하지 않습니다.");
 
     verify(chatRoomRepository, times(1)).existsById(nonExistentRoomId);
-    verify(chatMessageRepository, never()).findByChatRoomIdOrderBySentAtDesc(anyLong(), any(Pageable.class));
+    verify(chatMessageRepository, never()).findTop50ByChatRoomIdOrderBySentAtDesc(anyLong());
   }
 
   @Test
@@ -125,10 +120,10 @@ class ChatMessageServiceTest {
 
 
     when(chatRoomRepository.existsById(roomId)).thenReturn(true);
-    when(chatMessageRepository.findByChatRoomIdOrderBySentAtDesc(eq(roomId), any(Pageable.class))).thenReturn(messagePage);
+    when(chatMessageRepository.findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId))).thenReturn(messages);
 
     // When
-    List<ChatMessage> result = chatMessageService.getMoreMessages(roomId, page, size);
+    List<ChatMessageResponseDto> result = chatMessageService.getMoreMessages(roomId, page, size);
 
     // Then
     assertThat(result).isNotNull();
@@ -136,7 +131,7 @@ class ChatMessageServiceTest {
     assertThat(result.get(0).getMessage()).isEqualTo("Message 1");
     assertThat(result.get(1).getMessage()).isEqualTo("Message 2");
     verify(chatRoomRepository, times(1)).existsById(roomId);
-    verify(chatMessageRepository, times(1)).findByChatRoomIdOrderBySentAtDesc(eq(roomId), any(Pageable.class));
+    verify(chatMessageRepository, times(1)).findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId));
   }
 
   @Test
@@ -155,7 +150,7 @@ class ChatMessageServiceTest {
             .hasMessageContaining("해당 채팅방이 존재하지 않습니다.");
 
     verify(chatRoomRepository, times(1)).existsById(nonExistentRoomId);
-    verify(chatMessageRepository, never()).findByChatRoomIdOrderBySentAtDesc(anyLong(), any(Pageable.class));
+    verify(chatMessageRepository, never()).findTop50ByChatRoomIdOrderBySentAtDesc(anyLong());
   }
   @Test
   @DisplayName("메시지 저장 성공")
