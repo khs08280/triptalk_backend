@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,16 +24,15 @@ public class ChatMessageController {
   private final ChatRoomUserService chatRoomUserService;
   private final ChatMessageService chatMessageService;
 
-  @GetMapping
-  public ResponseEntity<ApiResponse<MessagesResponseDto>> getMoreMessages(
+  @GetMapping("/{roomId}")
+  public ResponseEntity<MessagesResponseDto> getMoreMessages(
           @AuthenticationPrincipal User user,
           @RequestParam("page") int page,
-          @RequestParam("roomId") Long roomId) {
+          @PathVariable Long roomId) {
 
     boolean isExistingUser = chatRoomUserService.isUserInRoom(user.getId(), roomId);
+    MessagesResponseDto messages = chatMessageService.getMoreMessages(roomId, page, 50);
 
-    MessagesResponseDto messages = chatMessageService.getMoreMessages(roomId, page + 1, 50);
-
-    return ResponseEntity.ok(ApiResponse.success(messages));
+    return ResponseEntity.ok(messages);
   }
 }

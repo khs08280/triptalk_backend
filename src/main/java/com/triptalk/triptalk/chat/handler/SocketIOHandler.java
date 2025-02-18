@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.triptalk.triptalk.chat.dto.MessagesResponseDto;
 import com.triptalk.triptalk.chat.dto.request.ChatMessageRequestDto;
+import com.triptalk.triptalk.chat.dto.request.GetMoreMessagesRequestDto;
 import com.triptalk.triptalk.chat.dto.request.JoinRoomRequestDto;
 import com.triptalk.triptalk.chat.dto.request.MessagePageableRequestDto;
 import com.triptalk.triptalk.chat.dto.response.ChatMessageResponseDto;
@@ -90,6 +91,7 @@ public class SocketIOHandler {
       if (isExistingUser) {
         log.info("기존 유저 {}가 채팅방 {}에 재접속", data.getUserId(), data.getRoomId());
         List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId());
+        log.info("메세지숫자{}",lastMessages.size());
         client.sendEvent("load_old_messages", lastMessages);
       } else {
         log.info("새로운 유저 {}가 채팅방 {}에 참여", data.getUserId(), data.getRoomId());
@@ -98,23 +100,26 @@ public class SocketIOHandler {
 
         chatRoomUserService.addUserToRoom(data.getUserId(), data.getRoomId());
 
-//        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId(), 50);
-//        client.sendEvent("load_old_messages", lastMessages);
+        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId());
+        client.sendEvent("load_old_messages", lastMessages);
       }
-    });
-
-    socketIOServer.addEventListener("get_more_messages", MessagePageableRequestDto.class, (client, data, ackRequest) -> {
-      client.joinRoom(String.valueOf(data.getRoomId()));
-      boolean isExistingUser = chatRoomUserService.isUserInRoom(data.getUserId(), data.getRoomId());
-
-      MessagesResponseDto lastMessages = chatMessageService.getMoreMessages(data.getRoomId(), data.getPage(), 50);
-      client.sendEvent("get_more_messages", lastMessages);
     });
 
     socketIOServer.addEventListener("out_room", JoinRoomRequestDto.class, (client, data, ackRequest) -> {
       client.leaveRoom(String.valueOf(data.getRoomId()));
       log.info("유저 {}가 채팅방 {}에서 채팅방 목록으로 나갔거나 접속을 끊음", data.getUserId(), data.getRoomId());
 
+    });
+
+    socketIOServer.addEventListener("get_more_messages", GetMoreMessagesRequestDto.class, (client, data, ackRequest) -> {
+      Long roomId = data.getRoomId();
+      String oldestMessageId = data.getOldestMessageId();
+
+      log.info("이전 메시지 로드 요청 - roomId: {}, oldestMessageId: {}", roomId, oldestMessageId);
+
+      MessagesResponseDto olderMessages = chatMessageService.getMoreMessages(roomId, oldestMessageId);
+
+      client.sendEvent("load_old_messages", olderMessages);
     });
 
     socketIOServer.addEventListener("leave_room", JoinRoomRequestDto.class, (client, data, ackRequest) -> {
