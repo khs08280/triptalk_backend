@@ -8,5 +8,6 @@ import lombok.Setter;
 
 public class GetMoreMessagesRequestDto {
   private Long roomId;
-  private String oldestMessageId; // nullable
+  private Long oldestMessageId;
+  private int size;
 }

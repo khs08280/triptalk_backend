@@ -13,5 +13,5 @@ import java.util.List;
 @AllArgsConstructor
 public class MessagesResponseDto {
   private List<ChatMessageResponseDto> messages;
-  private boolean hasMore;
+  private Integer nextPage;
 }

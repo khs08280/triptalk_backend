@@ -90,9 +90,9 @@ public class SocketIOHandler {
 
       if (isExistingUser) {
         log.info("기존 유저 {}가 채팅방 {}에 재접속", data.getUserId(), data.getRoomId());
-        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId());
-        log.info("메세지숫자{}",lastMessages.size());
-        client.sendEvent("load_old_messages", lastMessages);
+        MessagesResponseDto lastMessages = chatMessageService.getLastMessages(data.getRoomId());
+        log.info("메세지 첫번째:{}", lastMessages.getMessages().size());
+        client.sendEvent("load_first_messages", lastMessages);
       } else {
         log.info("새로운 유저 {}가 채팅방 {}에 참여", data.getUserId(), data.getRoomId());
         String joinMessage = data.getUserId() + "님이 채팅방에 참여했습니다.";
@@ -100,7 +100,7 @@ public class SocketIOHandler {
 
         chatRoomUserService.addUserToRoom(data.getUserId(), data.getRoomId());
 
-        List<ChatMessageResponseDto> lastMessages = chatMessageService.getLastMessages(data.getRoomId());
+        MessagesResponseDto lastMessages = chatMessageService.getLastMessages(data.getRoomId());
         client.sendEvent("load_old_messages", lastMessages);
       }
     });
@@ -113,11 +113,12 @@ public class SocketIOHandler {
 
     socketIOServer.addEventListener("get_more_messages", GetMoreMessagesRequestDto.class, (client, data, ackRequest) -> {
       Long roomId = data.getRoomId();
-      String oldestMessageId = data.getOldestMessageId();
+      Long oldestMessageId = data.getOldestMessageId();
+      int size = data.getSize();
 
-      log.info("이전 메시지 로드 요청 - roomId: {}, oldestMessageId: {}", roomId, oldestMessageId);
+      log.info("이전 메시지 로드 요청 - roomId: {}, oldestMessageId: {}, size:{}", roomId, oldestMessageId, size);
 
-      MessagesResponseDto olderMessages = chatMessageService.getMoreMessages(roomId, oldestMessageId);
+      MessagesResponseDto olderMessages = chatMessageService.getMoreMessages(roomId, oldestMessageId, size);
 
       client.sendEvent("load_old_messages", olderMessages);
     });

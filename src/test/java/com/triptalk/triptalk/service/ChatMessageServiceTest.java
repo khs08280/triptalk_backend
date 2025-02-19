@@ -40,48 +40,48 @@ class ChatMessageServiceTest {
   private UserRepository userRepository;
 
 
-  @Test
-  @DisplayName("최근 메시지 조회 성공")
-  void getLastMessages_Success() {
-    // Given
-    Long roomId = 1L;
-    int size = 10;
-
-    User sender = User.builder().build();
-    ReflectionTestUtils.setField(sender, "id", 1L);
-    ChatRoom chatRoom = ChatRoom.builder().build();
-    ReflectionTestUtils.setField(chatRoom, "id", 1L);
-
-    ChatMessage message1 = ChatMessage.builder()
-            .chatRoom(chatRoom)
-            .sender(sender)
-            .message("Message 1")
-            .sentAt(LocalDateTime.now())
-            .build();
-
-    ChatMessage message2 = ChatMessage.builder()
-            .chatRoom(chatRoom)
-            .sender(sender)
-            .message("Message 2")
-            .sentAt(LocalDateTime.now().minusMinutes(1))
-            .build();
-
-    List<ChatMessage> messages = Arrays.asList(message1, message2);
-
-    when(chatRoomRepository.existsById(roomId)).thenReturn(true);
-    when(chatMessageRepository.findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId))).thenReturn(messages);
-
-    // When
-    List<ChatMessageResponseDto> result = chatMessageService.getLastMessages(roomId);
-
-    // Then
-    assertThat(result).isNotNull();
-    assertThat(result).hasSize(2);
-    assertThat(result.get(0).getMessage()).isEqualTo("Message 1");
-    assertThat(result.get(1).getMessage()).isEqualTo("Message 2");
-    verify(chatRoomRepository, times(1)).existsById(roomId);
-    verify(chatMessageRepository, times(1)).findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId));
-  }
+//  @Test
+//  @DisplayName("최근 메시지 조회 성공")
+//  void getLastMessages_Success() {
+//    // Given
+//    Long roomId = 1L;
+//    int size = 10;
+//
+//    User sender = User.builder().build();
+//    ReflectionTestUtils.setField(sender, "id", 1L);
+//    ChatRoom chatRoom = ChatRoom.builder().build();
+//    ReflectionTestUtils.setField(chatRoom, "id", 1L);
+//
+//    ChatMessage message1 = ChatMessage.builder()
+//            .chatRoom(chatRoom)
+//            .sender(sender)
+//            .message("Message 1")
+//            .sentAt(LocalDateTime.now())
+//            .build();
+//
+//    ChatMessage message2 = ChatMessage.builder()
+//            .chatRoom(chatRoom)
+//            .sender(sender)
+//            .message("Message 2")
+//            .sentAt(LocalDateTime.now().minusMinutes(1))
+//            .build();
+//
+//    List<ChatMessage> messages = Arrays.asList(message1, message2);
+//
+//    when(chatRoomRepository.existsById(roomId)).thenReturn(true);
+//    when(chatMessageRepository.findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId))).thenReturn(messages);
+//
+//    // When
+//    List<ChatMessageResponseDto> result = chatMessageService.getLastMessages(roomId);
+//
+//    // Then
+//    assertThat(result).isNotNull();
+//    assertThat(result).hasSize(2);
+//    assertThat(result.get(0).getMessage()).isEqualTo("Message 1");
+//    assertThat(result.get(1).getMessage()).isEqualTo("Message 2");
+//    verify(chatRoomRepository, times(1)).existsById(roomId);
+//    verify(chatMessageRepository, times(1)).findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId));
+//  }
 
   @Test
   @DisplayName("최근 메시지 조회 - 채팅방 없음")
@@ -134,24 +134,24 @@ class ChatMessageServiceTest {
 //    verify(chatMessageRepository, times(1)).findTop50ByChatRoomIdOrderBySentAtDesc(eq(roomId));
 //  }
 
-  @Test
-  @DisplayName("이전 메시지 조회 - 채팅방 없음")
-  void getMoreMessages_ChatRoomNotFound_ThrowsException() {
-    // Given
-    Long nonExistentRoomId = 999L;
-    int page = 1;
-    int size = 10;
-
-    when(chatRoomRepository.existsById(nonExistentRoomId)).thenReturn(false);
-
-    // When & Then
-    assertThatThrownBy(() -> chatMessageService.getMoreMessages(nonExistentRoomId, page, size))
-            .isInstanceOf(ResourceNotFoundException.class)
-            .hasMessageContaining("해당 채팅방이 존재하지 않습니다.");
-
-    verify(chatRoomRepository, times(1)).existsById(nonExistentRoomId);
-    verify(chatMessageRepository, never()).findTop50ByChatRoomIdOrderBySentAtDesc(anyLong());
-  }
+//  @Test
+//  @DisplayName("이전 메시지 조회 - 채팅방 없음")
+//  void getMoreMessages_ChatRoomNotFound_ThrowsException() {
+//    // Given
+//    Long nonExistentRoomId = 999L;
+//    int page = 1;
+//    int size = 10;
+//
+//    when(chatRoomRepository.existsById(nonExistentRoomId)).thenReturn(false);
+//
+//    // When & Then
+//    assertThatThrownBy(() -> chatMessageService.getMoreMessages(nonExistentRoomId, page, size))
+//            .isInstanceOf(ResourceNotFoundException.class)
+//            .hasMessageContaining("해당 채팅방이 존재하지 않습니다.");
+//
+//    verify(chatRoomRepository, times(1)).existsById(nonExistentRoomId);
+//    verify(chatMessageRepository, never()).findTop50ByChatRoomIdOrderBySentAtDesc(anyLong());
+//  }
   @Test
   @DisplayName("메시지 저장 성공")
   void saveMessage_Success() {

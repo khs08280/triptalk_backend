@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,42 +35,46 @@ public class ChatMessageService {
   private static final int PAGE_SIZE = 30;
 
   @Transactional(readOnly = true)
-  public List<ChatMessageResponseDto> getLastMessages(Long roomId) {
+  public MessagesResponseDto getLastMessages(Long roomId) {
     if(!chatRoomRepository.existsById(roomId)){
       throw new ResourceNotFoundException("해당 채팅방이 존재하지 않습니다. Id: " + roomId);
     }
 
     List<ChatMessage> messages = chatMessageRepository.findTop50ByChatRoomIdOrderBySentAtDesc(roomId);
-
     Collections.reverse(messages);
 
-    log.info("겟 라스트 메시지:{}", messages.size());
+    Long lastId = messages.isEmpty() ? null : messages.getFirst().getId();
 
-    return messages.stream()
+    boolean hasMore = lastId != null && chatMessageRepository.existsByChatRoomIdAndIdLessThan(roomId, lastId);
+    Integer nextPageCursor = hasMore ? lastId.intValue() : null;
+
+    List<ChatMessageResponseDto> list = messages.stream()
             .map(ChatMessageResponseDto::fromEntity)
-            .collect(Collectors.toList());
+            .toList();
+
+    return new MessagesResponseDto(list, nextPageCursor);
   }
-  @Transactional
-  public MessagesResponseDto getMoreMessages(Long roomId, String oldestMessageId) {
+  @Transactional(readOnly = true)
+  public MessagesResponseDto getMoreMessages(Long roomId, Long oldestMessageId, int size) {
+    ChatMessage oldestMessage = chatMessageRepository.findById(oldestMessageId).orElseThrow(() -> new ResourceNotFoundException("해당 메시지를 찾을 수 없습니다."));
 
-    Pageable pageable = PageRequest.of(0, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdDate"));
-    List<ChatMessage> messages;
-    boolean hasMore;
-    if(oldestMessageId == null) {
-      messages = chatMessageRepository.findByRoomIdOrderByCreatedDateDesc(roomId, pageable);
-      hasMore = messages.size() >= PAGE_SIZE;
-    } else {
-      messages = chatMessageRepository.findOlderMessages(roomId, oldestMessageId, pageable);
-      hasMore = chatMessageRepository.hasOlderMessages(roomId, oldestMessageId); // 추가 메시지 있는지 확인
-    }
+    log.info("roomid:{}, oldestMessageId:{} , size:{}",roomId, oldestMessageId, size);
+
+    Pageable pageable = PageRequest.of(0, size);
+    List<ChatMessage> messages = chatMessageRepository.findByChatRoomIdAndIdLessThanOrderByIdDesc(roomId, oldestMessageId, pageable);
+    Collections.reverse(messages);
+
+    Long lastId = messages.isEmpty() ? null : messages.getFirst().getId();
+
+    boolean hasMore = lastId != null && chatMessageRepository.existsByChatRoomIdAndIdLessThan(roomId, lastId);
+    Integer nextPageCursor = hasMore ? lastId.intValue() : null;
 
 
-    List<ChatMessageResponseDto> messageDtos = messages.stream()
+    List<ChatMessageResponseDto> messagesDto = messages.stream()
             .map(ChatMessageResponseDto::fromEntity)
-            .collect(Collectors.toList());
+            .toList();
 
-    return new MessagesResponseDto(messageDtos, hasMore);
-
+    return new MessagesResponseDto(messagesDto, nextPageCursor);
   }
 
 //  @Transactional(readOnly = true)

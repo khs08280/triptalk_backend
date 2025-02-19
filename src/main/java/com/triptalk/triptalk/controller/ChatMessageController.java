@@ -23,16 +23,16 @@ public class ChatMessageController {
 
   private final ChatRoomUserService chatRoomUserService;
   private final ChatMessageService chatMessageService;
-
-  @GetMapping("/{roomId}")
-  public ResponseEntity<MessagesResponseDto> getMoreMessages(
-          @AuthenticationPrincipal User user,
-          @RequestParam("page") int page,
-          @PathVariable Long roomId) {
-
-    boolean isExistingUser = chatRoomUserService.isUserInRoom(user.getId(), roomId);
-    MessagesResponseDto messages = chatMessageService.getMoreMessages(roomId, page, 50);
-
-    return ResponseEntity.ok(messages);
-  }
+//
+//  @GetMapping("/{roomId}")
+//  public ResponseEntity<MessagesResponseDto> getMoreMessages(
+//          @AuthenticationPrincipal User user,
+//          @RequestParam("page") int page,
+//          @PathVariable Long roomId) {
+//
+//    boolean isExistingUser = chatRoomUserService.isUserInRoom(user.getId(), roomId);
+//    MessagesResponseDto messages = chatMessageService.getMoreMessages(roomId, page, 50);
+//
+//    return ResponseEntity.ok(messages);
+//  }
 }

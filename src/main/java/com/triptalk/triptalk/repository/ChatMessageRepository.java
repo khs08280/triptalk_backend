@@ -7,19 +7,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
   List<ChatMessage> findTop50ByChatRoomIdOrderBySentAtDesc(Long roomId);
-  List<ChatMessage> findByRoomIdOrderBySentAtDesc(String roomId, Pageable pageable);
 
-  List<ChatMessage> findByRoomIdOrderByCreatedDateDesc(Long roomId, Pageable pageable);
+  boolean existsByChatRoomIdAndSentAtBefore(Long roomId, LocalDateTime sentAt);
 
-  @Query("SELECT m FROM ChatMessage m WHERE m.roomId = :roomId AND m.createdDate < (SELECT c.createdDate FROM ChatMessage c WHERE c.id = :oldestMessageId) ORDER BY m.createdDate DESC")
-  List<ChatMessage> findOlderMessages(@Param("roomId") Long roomId, @Param("oldestMessageId") String oldestMessageId, Pageable pageable);
-
-
-  // hasMore를 위한 쿼리
-  @Query("SELECT COUNT(m) > 0 FROM ChatMessage m WHERE m.roomId = :roomId AND m.createdDate < (SELECT c.createdDate FROM ChatMessage c WHERE c.id = :oldestMessageId)")
-  boolean hasOlderMessages(@Param("roomId") Long roomId, @Param("oldestMessageId") String oldestMessageId);
+  List<ChatMessage> findByChatRoomIdOrderByIdDesc(Long roomId, Pageable pageable);
+  List<ChatMessage> findByChatRoomIdAndIdLessThanOrderByIdDesc(Long roomId, Long id, Pageable pageable);
+  boolean existsByChatRoomIdAndIdLessThan(Long roomId, Long id);
 }
