@@ -14,6 +14,7 @@ public class ChatMessageResponseDto {
   private Long id;
   private Long roomId;
   private Long senderId;
+  private String nickname;
   private String message;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -25,6 +26,7 @@ public class ChatMessageResponseDto {
             .id(chatMessage.getId())
             .roomId(chatMessage.getChatRoom().getId())
             .senderId(chatMessage.getSender().getId())
+            .nickname(chatMessage.getNickname())
             .message(chatMessage.getMessage())
             .sentAt(chatMessage.getSentAt())
             .build();

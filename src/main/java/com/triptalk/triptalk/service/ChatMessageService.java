@@ -106,6 +106,7 @@ public class ChatMessageService {
     ChatMessage chatMessage = ChatMessage.builder()
             .chatRoom(chatRoom)
             .sender(user)
+            .nickname(user.getNickname())
             .message(message)
             .build();
 

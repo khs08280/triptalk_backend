@@ -31,6 +31,9 @@ public class ChatMessage {
   @JoinColumn(name = "sender_id", nullable = false)
   private User sender;
 
+  @JoinColumn(name = "nickname", nullable = false)
+  private String nickname;
+
   @Column(name = "message", nullable = false, columnDefinition = "TEXT")
   private String message;
 
