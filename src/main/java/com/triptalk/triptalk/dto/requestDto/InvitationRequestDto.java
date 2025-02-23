@@ -7,18 +7,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class InvitationRequestDto {
 
-  @NotNull(message = "초대받을 사용자 ID는 필수입니다.")
-  private Long invitedId;  // 초대받을 사용자 ID
+  @NotNull(message = "초대할 유저 닉네임은 필수입니다.")
+  private String inviteeNickname;
 
-  public static InvitationRequestDto fromEntity( Long invitedId, InvitationStatus status) {
-    return InvitationRequestDto.builder()
-            .invitedId(invitedId)
-            .build();
-  }
 }

@@ -26,7 +26,7 @@ public class InvitationService {
   private final ChatRoomUserRepository chatRoomUserRepository;
 
   public List<InvitationResponseDto> getUserInvitations(Long userId) {
-    List<Invitation> invitations = invitationRepository.findAllWithDetailsByInvitedId(userId);
+    List<Invitation> invitations = invitationRepository.findAllWithDetailsByInvitedIdAndStatus(userId,InvitationStatus.PENDING);
 
     return invitations.stream()
             .map(InvitationResponseDto::fromEntity)
@@ -44,12 +44,10 @@ public class InvitationService {
     User invited = userRepository.findByNickname(invitedNickname)
             .orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾지 못했습니다."));
 
-    // 이미 초대된 상태인지 확인
-    if (invitationRepository.existsByTripAndInvited(trip, invited)) {
+    if (tripUserRepository.existsByTripIdAndUserId(tripId, invited.getId())) {
       throw new IllegalStateException("이미 초대된 사용자입니다.");
     }
 
-    // 초대 저장
     Invitation invitation = Invitation.builder()
             .trip(trip)
             .inviter(inviter)

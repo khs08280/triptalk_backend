@@ -1,6 +1,7 @@
 package com.triptalk.triptalk.controller;
 
 import com.triptalk.triptalk.domain.entity.User;
+import com.triptalk.triptalk.dto.requestDto.InvitationRequestDto;
 import com.triptalk.triptalk.dto.responseDto.ApiResponse;
 import com.triptalk.triptalk.dto.responseDto.InvitationResponseDto;
 import com.triptalk.triptalk.service.InvitationService;
@@ -31,16 +32,16 @@ public class InvitationController {
   @PostMapping("/send/{tripId}")
   public ResponseEntity<ApiResponse<Void>> sendInvitation(
           @PathVariable Long tripId,
-          @RequestParam String inviteeNickname,
+          @RequestBody InvitationRequestDto invitationRequestDto,
           @AuthenticationPrincipal User user) {
 
-    invitationService.sendInvitation(tripId, user.getId(), inviteeNickname);
+    invitationService.sendInvitation(tripId, user.getId(), invitationRequestDto.getInviteeNickname());
 
     return ResponseEntity.ok(ApiResponse.success("초대가 성공적으로 전송되었습니다.", null));
   }
 
 
-  @PatchMapping("/cancel/{invitationId}")
+  @PatchMapping("/{invitationId}/cancel")
   public ResponseEntity<ApiResponse<Void>> cancelInvitation(
           @PathVariable Long invitationId,
           @AuthenticationPrincipal User user) {
@@ -51,7 +52,7 @@ public class InvitationController {
   }
 
 
-  @PatchMapping("/accept/{invitationId}")
+  @PatchMapping("/{invitationId}/accept")
   public ResponseEntity<ApiResponse<Void>> acceptInvitation(
           @PathVariable Long invitationId,
           @AuthenticationPrincipal User user) {
@@ -62,7 +63,7 @@ public class InvitationController {
   }
 
 
-  @PatchMapping("/reject/{invitationId}")
+  @PatchMapping("/{invitationId}/reject")
   public ResponseEntity<ApiResponse<Void>> rejectInvitation(
           @PathVariable Long invitationId,
           @AuthenticationPrincipal User user) {

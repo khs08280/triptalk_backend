@@ -19,4 +19,5 @@ public interface UserService extends UserDetailsService {
   UserResponseDto saveRefreshToken(String username, String refreshToken);
   UserDetails loadUserByUsername(String username);
   void logoutUser(Authentication authentication);
+  List<UserResponseDto> getUserListByNickname(String nickname);
 }

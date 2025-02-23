@@ -7,6 +7,7 @@ import com.triptalk.triptalk.dto.responseDto.ApiResponse;
 import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -73,10 +74,19 @@ public class UserController {
     }
   }
 
-  @GetMapping
+  @GetMapping("/all")
   public ResponseEntity<ApiResponse<List<UserResponseDto>>> getAllUser() {
     List<UserResponseDto> allUser = userService.getAllUserList();
     return ResponseEntity.ok(ApiResponse.success("모든 사용자 조회 성공", allUser));
+  }
+
+  @GetMapping
+  public ResponseEntity<ApiResponse<List<UserResponseDto>>> getUserListByNickname(
+          @PathParam("nickname") String nickname
+  ){
+    List<UserResponseDto> userList = userService.getUserListByNickname(nickname);
+
+    return ResponseEntity.ok(ApiResponse.success("닉네임 조회 성공", userList));
   }
 
   @GetMapping("/me")

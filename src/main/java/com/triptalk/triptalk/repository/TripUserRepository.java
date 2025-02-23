@@ -14,4 +14,5 @@ public interface TripUserRepository extends JpaRepository<TripUser, Long> {
 
   @Query("SELECT tu.user FROM TripUser tu WHERE tu.trip = :trip")
   List<User> findUsersByTrip(Trip trip);
+  boolean existsByTripIdAndUserId(Long tripId, Long userId);
 }

@@ -141,4 +141,19 @@ public class UserServiceImpl implements UserService {
     // SecurityContextHolder 초기화
     SecurityContextHolder.clearContext();
   }
+
+  @Override
+  public List<UserResponseDto> getUserListByNickname(String nickname){
+    List<User> userList = userRepository.findByNicknameStartingWith(nickname);
+
+    if(userList.isEmpty()){
+      throw new ResourceNotFoundException("해당 닉네임을 가진 유저를 찾을 수 없습니다.");
+    }
+
+    return userList.stream()
+            .map(UserResponseDto::fromEntity)
+            .collect(Collectors.toList());
+
+  }
+
 }
