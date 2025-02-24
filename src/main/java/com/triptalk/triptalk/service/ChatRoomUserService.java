@@ -4,6 +4,7 @@ import com.triptalk.triptalk.domain.entity.ChatRoom;
 import com.triptalk.triptalk.domain.entity.ChatRoomUser;
 import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.responseDto.ChatRoomResponseDto;
+import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.exception.InvalidTokenException;
 import com.triptalk.triptalk.exception.ResourceNotFoundException;
 import com.triptalk.triptalk.repository.ChatRoomRepository;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,6 +84,17 @@ public class ChatRoomUserService {
             .collect(Collectors.toList());
   }
 
+  public List<UserResponseDto> getUsersInChatRoom(Long chatRoomId){
+    ChatRoom chatRoom = findChatRoom(chatRoomId);
+    List<ChatRoomUser> chatRoomUsers = chatRoomUserRepository.findByChatRoom(chatRoom);
+
+    List<UserResponseDto> userResponseDto = new ArrayList<>();
+    for (ChatRoomUser chatRoomUser : chatRoomUsers) {
+      userResponseDto.add(UserResponseDto.fromEntity(chatRoomUser.getUser()));
+    }
+
+    return userResponseDto;
+  }
 
 
   private ChatRoom findChatRoom(Long roomId) {
@@ -91,4 +104,5 @@ public class ChatRoomUserService {
   private User findUser(Long userId) {
     return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("해당 유저를 찾지 못했습니다. Id: " + userId));
   }
+
 }

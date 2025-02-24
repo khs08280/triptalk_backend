@@ -6,6 +6,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "chat_rooms")
@@ -23,6 +25,13 @@ public class ChatRoom {
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "trip_id", nullable = false, unique = true)
   private Trip trip;
+
+  @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ChatMessage> chatMessages = new ArrayList<>();
+
+
+  @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ChatRoomUser> chatRoomUsers = new ArrayList<>();
 
   @Column(name = "created_at", nullable = false, updatable = false)
   @CreatedDate

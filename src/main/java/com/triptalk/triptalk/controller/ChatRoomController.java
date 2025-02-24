@@ -4,12 +4,14 @@ package com.triptalk.triptalk.controller;
 import com.triptalk.triptalk.domain.entity.User;
 import com.triptalk.triptalk.dto.responseDto.ApiResponse;
 import com.triptalk.triptalk.dto.responseDto.ChatRoomResponseDto;
+import com.triptalk.triptalk.dto.responseDto.UserResponseDto;
 import com.triptalk.triptalk.service.ChatRoomUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +31,12 @@ public class ChatRoomController {
     List<ChatRoomResponseDto> chatRoomList = chatRoomUserService.findChatRoomList(user);
 
     return ResponseEntity.ok(ApiResponse.success(chatRoomList));
+  }
+
+  @GetMapping("{chatRoomId}/users")
+  public ResponseEntity<ApiResponse<List<UserResponseDto>>> getUsersInChatRoom(@PathVariable Long chatRoomId){
+    List<UserResponseDto> usersInChatRoom = chatRoomUserService.getUsersInChatRoom(chatRoomId);
+    return ResponseEntity.ok(ApiResponse.success(usersInChatRoom));
   }
 
 }

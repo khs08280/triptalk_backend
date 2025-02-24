@@ -27,7 +27,7 @@ public class ChatMessage {
   @JoinColumn(name = "chat_room_id", nullable = false)
   private ChatRoom chatRoom;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "sender_id", nullable = false)
   private User sender;
 
@@ -44,6 +44,4 @@ public class ChatMessage {
   @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ChatMessageAttachment> attachments = new ArrayList<>();
 
-
-  // ... 추가 필드 (예: 메시지 타입, 첨부 파일 정보 등)
 }
