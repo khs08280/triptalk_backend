@@ -1,5 +1,6 @@
 package com.triptalk.triptalk.dto.requestDto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.triptalk.triptalk.domain.entity.Place;
 import com.triptalk.triptalk.domain.enums.PlaceType;
 import jakarta.validation.constraints.NotBlank;
@@ -31,8 +32,10 @@ public class ScheduleRequestDto {
   @Size(max = 255, message = "name은 최대 255자 이하여야 합니다.")
   private String name;
 
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
   private LocalTime startTime;
 
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
   private LocalTime endTime;
 
   @Size(max = 1000, message = "메모는 1000자 이하")

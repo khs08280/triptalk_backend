@@ -18,7 +18,7 @@ import java.util.Optional;
 public class ScheduleResponseDto {
 
   private Long id;
-  private Long tripId;            // Schedule과 연관된 Trip의 ID만 노출
+  private Long tripId;
   private LocalDate date;
   private String name;
   private PlaceResponseDto placeResponseDto;
@@ -28,9 +28,6 @@ public class ScheduleResponseDto {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  /**
-   * Schedule 엔티티 -> DTO 변환 메서드
-   */
   public static ScheduleResponseDto fromEntity(Schedule schedule) {
     return ScheduleResponseDto.builder()
             .id(schedule.getId())
