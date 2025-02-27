@@ -83,7 +83,7 @@ class InvitationServiceTest {
   @Test
   void testGetUserInvitations() {
     // given
-    given(invitationRepository.findAllWithDetailsByInvitedId(2L))
+    given(invitationRepository.findAllWithDetailsByInvitedIdAndStatus(2L, InvitationStatus.PENDING))
             .willReturn(List.of(invitation));
 
     // when
@@ -94,7 +94,7 @@ class InvitationServiceTest {
     assertThat(result.get(0).getInvitedId()).isEqualTo(invited.getId());
 
     verify(invitationRepository, times(1))
-            .findAllWithDetailsByInvitedId(2L);
+            .findAllWithDetailsByInvitedIdAndStatus(2L, InvitationStatus.PENDING);
   }
 
   @Test
@@ -107,7 +107,7 @@ class InvitationServiceTest {
     given(tripRepository.findById(tripId)).willReturn(Optional.of(trip));
     given(userRepository.findById(inviterId)).willReturn(Optional.of(inviter));
     given(userRepository.findByNickname(invitedNickname)).willReturn(Optional.of(invited));
-    given(invitationRepository.existsByTripAndInvited(trip, invited)).willReturn(false);
+    given(tripUserRepository.existsByTripIdAndUserId(tripId, invited.getId())).willReturn(false);
 
     // when
     invitationService.sendInvitation(tripId, inviterId, invitedNickname);
@@ -126,7 +126,7 @@ class InvitationServiceTest {
     given(tripRepository.findById(tripId)).willReturn(Optional.of(trip));
     given(userRepository.findById(inviterId)).willReturn(Optional.of(inviter));
     given(userRepository.findByNickname(invitedNickname)).willReturn(Optional.of(invited));
-    given(invitationRepository.existsByTripAndInvited(trip, invited)).willReturn(true);
+    given(tripUserRepository.existsByTripIdAndUserId(tripId, invited.getId())).willReturn(true);
 
     // when & then
     assertThatThrownBy(() ->

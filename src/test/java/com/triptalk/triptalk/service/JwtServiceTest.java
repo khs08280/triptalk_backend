@@ -36,13 +36,15 @@ class JwtServiceTest {
   private UserRepository userRepository;
 
   private final String SECRET_KEY = "testSecretKeytestSecretKeytestSecretKeytestSecretKeytestSecretKey";
-  private final Long EXPIRATION_TIME = 3600000L;
+  private final Long ACCESS_TOKEN_EXPIRATION = 3600000L;
+  private final Long REFRESH_TOKEN_EXPIRATION = 3600000L;
 
   @BeforeEach
   void setUp() {
     // ReflectionTestUtils를 사용하여 private 필드에 값 주입
     ReflectionTestUtils.setField(jwtService, "SECRET_KEY", SECRET_KEY);
-    ReflectionTestUtils.setField(jwtService, "EXPIRATION_TIME", EXPIRATION_TIME);
+    ReflectionTestUtils.setField(jwtService, "ACCESS_TOKEN_EXPIRATION", ACCESS_TOKEN_EXPIRATION);
+    ReflectionTestUtils.setField(jwtService, "REFRESH_TOKEN_EXPIRATION", REFRESH_TOKEN_EXPIRATION);
   }
 
 
@@ -70,7 +72,7 @@ class JwtServiceTest {
   void extractUsername_Success() {
     // Given
     String expectedUsername = "testuser";
-    String token = createTestToken(expectedUsername, new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+    String token = createTestToken(expectedUsername, new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION));
 
     // When
     String actualUsername = jwtService.extractUsername(token);
@@ -83,7 +85,7 @@ class JwtServiceTest {
   @DisplayName("만료시간 추출 성공")
   void extractExpiration_Success() {
     // Given
-    Date expectedExpiration = new Date(System.currentTimeMillis() + EXPIRATION_TIME);
+    Date expectedExpiration = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION);
     String token = createTestToken("testuser", expectedExpiration);
 
     // When
@@ -117,7 +119,7 @@ class JwtServiceTest {
   void isTokenValid_ValidToken_ReturnsTrue() {
     // Given
     String username = "testuser";
-    String token = createTestToken(username, new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+    String token = createTestToken(username, new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION));
     UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
             .username(username)
             .password("password")
@@ -154,7 +156,7 @@ class JwtServiceTest {
   @DisplayName("잘못된 사용자 이름으로 토큰 검증 실패")
   void isTokenValid_IncorrectUsername_ReturnsFalse() {
     // Given
-    String token = createTestToken("testuser1", new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+    String token = createTestToken("testuser1", new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION));
     UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
             .username("testuser2") // 다른 사용자 이름
             .password("password")
@@ -172,7 +174,7 @@ class JwtServiceTest {
   @DisplayName("validateToken 성공")
   void validateToken_Success() {
     // Given
-    String token = createTestToken("testuser", new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+    String token = createTestToken("testuser", new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION));
 
     // When & Then (예외가 발생하지 않으면 성공)
     jwtService.validateToken(token);
@@ -220,7 +222,7 @@ class JwtServiceTest {
     Long expectedUserId = 123L;
     Map<String, Object> claims = new HashMap<>();
     claims.put("userId", expectedUserId);
-    String token = createTestTokenWithClaims(claims, "testuser", new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+    String token = createTestTokenWithClaims(claims, "testuser", new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION));
 
     // When
     Long actualUserId = jwtService.getUserId(token);

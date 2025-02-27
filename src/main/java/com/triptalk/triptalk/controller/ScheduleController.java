@@ -34,9 +34,9 @@ public class ScheduleController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping
-  public ResponseEntity<ApiResponse<List<ScheduleResponseDto>>> getAllSchedules() {
-    List<ScheduleResponseDto> schedules = scheduleService.getAllSchedules();
+  @GetMapping("/all/{tripId}")
+  public ResponseEntity<ApiResponse<List<ScheduleResponseDto>>> getAllSchedules(@PathVariable Long tripId) {
+    List<ScheduleResponseDto> schedules = scheduleService.getAllSchedules(tripId);
     // 여러 건을 조회했으므로, List를 data로 담아서 응답
     ApiResponse<List<ScheduleResponseDto>> response = ApiResponse.success("전체 스케줄 조회 성공",schedules);
     return ResponseEntity.ok(response);

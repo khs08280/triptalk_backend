@@ -1,10 +1,8 @@
 package com.triptalk.triptalk.service;
 
-import com.triptalk.triptalk.domain.entity.Place;
 import com.triptalk.triptalk.domain.entity.Schedule;
 import com.triptalk.triptalk.domain.entity.Trip;
 import com.triptalk.triptalk.domain.enums.PlaceType;
-import com.triptalk.triptalk.dto.requestDto.PlaceRequestDto;
 import com.triptalk.triptalk.dto.requestDto.ScheduleRequestDto;
 import com.triptalk.triptalk.dto.responseDto.ScheduleResponseDto;
 import com.triptalk.triptalk.exception.BadRequestException;
@@ -40,24 +38,17 @@ class ScheduleServiceTest {
   @Mock
   private TripRepository tripRepository;
 
-  @Mock
-  private PlaceService placeService;
-
   @Test
   @DisplayName("스케줄 생성 성공 - CUSTOM 타입")
   void createSchedule_Custom_Success() {
     // Given
-
-    PlaceRequestDto placeDto = PlaceRequestDto.builder().build();
     Long tripId = 1L;
     ScheduleRequestDto requestDto = ScheduleRequestDto.builder()
             .tripId(tripId)
             .name("Custom Place")
-            .placeType(PlaceType.CUSTOM)
             .date(LocalDate.of(2023, 1, 1))
             .startTime(LocalTime.of(10, 0))
             .endTime(LocalTime.of(12, 0))
-            .place(placeDto)
             .memo("Custom Memo")
             .build();
 
@@ -95,10 +86,8 @@ class ScheduleServiceTest {
     assertThat(result).isNotNull();
     assertThat(result.getId()).isEqualTo(1L); // Assuming savedSchedule has id 1L
     assertThat(result.getName()).isEqualTo("Custom Place"); // CUSTOM 타입은 placeName 사용
-    assertThat(result.getPlaceResponseDto()).isNull(); // CUSTOM 타입은 Place가 null
     verify(tripRepository, times(1)).findById(tripId);
     verify(scheduleRepository, times(1)).save(any(Schedule.class));
-    verify(placeService, never()).getOrCreatePlace(any()); // PlaceService 호출 안됨
 
   }
 
@@ -111,8 +100,6 @@ class ScheduleServiceTest {
     ScheduleRequestDto requestDto = ScheduleRequestDto.builder()
             .tripId(tripId)
             .name("Naver Place")
-            .placeType(PlaceType.NAVER)
-            .placeId(placeId) // NAVER 타입에는 placeId 필요
             .date(LocalDate.of(2023, 1, 1))
             .startTime(LocalTime.of(14, 0))
             .endTime(LocalTime.of(16, 0))
@@ -122,13 +109,9 @@ class ScheduleServiceTest {
 
     Trip mockTrip = Trip.builder().build();
     ReflectionTestUtils.setField(mockTrip, "id", tripId);
-    Place mockPlace = Place.builder().name("Naver Place").build();
-    ReflectionTestUtils.setField(mockPlace, "id", placeId);
 
     Schedule scheduleToSave = Schedule.builder()
             .trip(mockTrip)
-            .place(mockPlace)
-            .name(mockPlace.getName()) // place의 이름을 사용
             .date(requestDto.getDate())
             .startTime(requestDto.getStartTime())
             .endTime(requestDto.getEndTime())
@@ -137,8 +120,6 @@ class ScheduleServiceTest {
 
     Schedule savedSchedule = Schedule.builder()
             .trip(mockTrip)
-            .place(mockPlace)
-            .name(mockPlace.getName())
             .date(requestDto.getDate())
             .startTime(requestDto.getStartTime())
             .endTime(requestDto.getEndTime())
@@ -148,7 +129,6 @@ class ScheduleServiceTest {
     ReflectionTestUtils.setField(savedSchedule, "id", 1L); // Set id
 
     when(tripRepository.findById(tripId)).thenReturn(Optional.of(mockTrip));
-    when(placeService.getOrCreatePlace(requestDto)).thenReturn(mockPlace);
     when(scheduleRepository.save(any(Schedule.class))).thenReturn(savedSchedule);
 
     // When
@@ -157,41 +137,11 @@ class ScheduleServiceTest {
     // Then
     assertThat(result).isNotNull();
     assertThat(result.getId()).isEqualTo(1L); // Assuming savedSchedule has id 1
-    assertThat(result.getPlaceResponseDto().getName()).isEqualTo("Naver Place"); // Place 이름 사용
-    assertThat(result.getPlaceResponseDto().getId()).isEqualTo(placeId);
     verify(tripRepository).findById(tripId);
-    verify(placeService).getOrCreatePlace(requestDto);
     verify(scheduleRepository).save(any(Schedule.class));
   }
 
-  @Test
-  @DisplayName("스케줄 생성 실패 - 잘못된 PlaceType")
-  void createSchedule_InvalidPlaceType_ThrowsException() {
-    // Given
-    Long tripId = 1L;
-    ScheduleRequestDto requestDto = ScheduleRequestDto.builder()
-            .tripId(tripId)
-            .name("Invalid Place")
-            .placeType(null) // Invalid PlaceType
-            .date(LocalDate.now())
-            .startTime(LocalTime.now())
-            .endTime(LocalTime.now().plusHours(2))
-            .build();
 
-    Trip mockTrip = Trip.builder().build();
-    ReflectionTestUtils.setField(mockTrip, "id", tripId);
-
-
-    when(tripRepository.findById(tripId)).thenReturn(Optional.of(mockTrip));
-
-    // When & Then
-    assertThatThrownBy(() -> scheduleService.createSchedule(requestDto))
-            .isInstanceOf(BadRequestException.class)
-            .hasMessageContaining("잘못된 장소 타입");
-    verify(tripRepository, times(1)).findById(tripId); // tripRepository는 호출되어야 함.
-    verify(scheduleRepository, never()).save(any(Schedule.class)); // save()는 호출되지 않아야 함.
-    verify(placeService, never()).getOrCreatePlace(any());
-  }
   @Test
   @DisplayName("스케줄 생성 실패 - Trip 없음")
   void createSchedule_TripNotFound_ThrowsException() {
@@ -200,7 +150,6 @@ class ScheduleServiceTest {
     ScheduleRequestDto requestDto = ScheduleRequestDto.builder()
             .tripId(nonExistentTripId)
             .name("Some Place")
-            .placeType(PlaceType.CUSTOM)
             .date(LocalDate.now())
             .startTime(LocalTime.now())
             .endTime(LocalTime.now().plusHours(2))
@@ -271,17 +220,17 @@ class ScheduleServiceTest {
     ReflectionTestUtils.setField(schedule2, "id", 2L);
 
     List<Schedule> schedules = Arrays.asList(schedule1, schedule2);
-    when(scheduleRepository.findAll()).thenReturn(schedules);
+    when(scheduleRepository.findByTripId(trip.getId())).thenReturn(schedules);
 
     // When
-    List<ScheduleResponseDto> result = scheduleService.getAllSchedules();
+    List<ScheduleResponseDto> result = scheduleService.getAllSchedules(trip.getId());
 
     // Then
     assertThat(result).isNotNull();
     assertThat(result).hasSize(2);
     assertThat(result.get(0).getName()).isEqualTo("Schedule 1");
     assertThat(result.get(1).getName()).isEqualTo("Schedule 2");
-    verify(scheduleRepository, times(1)).findAll();
+    verify(scheduleRepository, times(1)).findByTripId(trip.getId());
   }
   @Test
   @DisplayName("스케줄 업데이트 성공")

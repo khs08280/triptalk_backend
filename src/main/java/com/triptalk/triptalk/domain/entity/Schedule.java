@@ -26,15 +26,11 @@ public class Schedule {
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "trip_id", nullable = false, insertable = false, updatable = false)
+  @JoinColumn(name = "trip_id", nullable = false)
   private Trip trip;
 
   @Column(name = "date")
   private LocalDate date;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "place_id")
-  private Place place;
 
   @Column(name = "name", nullable = false)
   private String name;
@@ -57,12 +53,6 @@ public class Schedule {
   private LocalDateTime updatedAt;
 
   public Schedule updateDetails(ScheduleRequestDto requestDto) {
-    if(requestDto.getPlace() != null){
-      Place place = Place.builder()
-              .name(requestDto.getName())
-              .address(requestDto.getPlace().getAddress())
-              .build();
-    }
 
     return Schedule.builder()
             .id(this.id)
@@ -72,7 +62,6 @@ public class Schedule {
             .startTime(requestDto.getStartTime())
             .endTime(requestDto.getEndTime())
             .memo(requestDto.getMemo())
-            .place(place)
             .createdAt(this.createdAt)
             .updatedAt(this.updatedAt)
             .build();

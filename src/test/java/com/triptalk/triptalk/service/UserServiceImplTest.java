@@ -47,6 +47,7 @@ class UserServiceImplTest {
             .email("testtest123@tetete.com")
             .nickname("테스트테스트123")
             .password("1234")
+            .confirmPassword("1234")
             .build();
 
     given(userRepository.existsByEmail("testtest123@tetete.com")).willReturn(false);

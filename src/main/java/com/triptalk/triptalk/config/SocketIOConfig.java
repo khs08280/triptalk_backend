@@ -43,7 +43,7 @@ public class SocketIOConfig {
     config.setKeyStore(fileInputStream);
 
     config.getAllowHeaders();
-    config.setOrigin("https://localhost:5173");
+    config.setOrigin("https://triptalk1.netlify.app");
 
     config.setJsonSupport(new JacksonJsonSupport(new JavaTimeModule()));
     return new SocketIOServer(config);

@@ -21,7 +21,6 @@ public class ScheduleResponseDto {
   private Long tripId;
   private LocalDate date;
   private String name;
-  private PlaceResponseDto placeResponseDto;
   private LocalTime startTime;
   private LocalTime endTime;
   private String memo;
@@ -34,7 +33,6 @@ public class ScheduleResponseDto {
             .tripId(schedule.getTrip().getId())
             .date(schedule.getDate())
             .name(schedule.getName())
-            .placeResponseDto(Optional.ofNullable(schedule.getPlace()).map(PlaceResponseDto::fromEntity).orElse(null))
             .startTime(schedule.getStartTime())
             .endTime(schedule.getEndTime())
             .memo(schedule.getMemo())
