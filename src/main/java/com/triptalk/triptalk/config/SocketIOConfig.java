@@ -31,14 +31,24 @@ public class SocketIOConfig {
   @Value("${server.ssl.key-store-password}")
   private String keystorePassword;
 
+  @Value("${socket.io.keystore-path:/app/localhost.p12}")
+  private String keystoreFilePath;
+
   @Bean
-  public SocketIOServer socketIOServer() throws FileNotFoundException {
+  public SocketIOServer socketIOServer() throws Exception {
     Configuration config = new Configuration();
     config.setHostname(host);
     config.setPort(port);
 
-    String path = ClassLoader.getSystemResource("localhost.p12").getPath();
-    FileInputStream fileInputStream = new FileInputStream(path);
+//    String path = ClassLoader.getSystemResource("localhost.p12").getPath();
+//    FileInputStream fileInputStream = new FileInputStream(path);
+
+//    org.springframework.core.io.Resource resource =
+//            new org.springframework.core.io.ClassPathResource("localhost.p12");
+//    File keyStoreFile = resource.getFile();
+    File keyStoreFile = new File(keystoreFilePath);
+    FileInputStream fileInputStream = new FileInputStream(keyStoreFile);
+
     config.setKeyStorePassword(keystorePassword);
     config.setKeyStore(fileInputStream);
 

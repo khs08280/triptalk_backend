@@ -27,10 +27,12 @@ public class ChatRoom {
   private Trip trip;
 
   @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<ChatMessage> chatMessages = new ArrayList<>();
 
 
   @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<ChatRoomUser> chatRoomUsers = new ArrayList<>();
 
   @Column(name = "created_at", nullable = false, updatable = false)

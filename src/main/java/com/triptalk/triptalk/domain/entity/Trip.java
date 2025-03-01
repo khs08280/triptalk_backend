@@ -65,12 +65,15 @@ public class Trip {
   private LocalDateTime updatedAt;
 
   @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<TripUser> tripUsers = new ArrayList<>();
 
   @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<Schedule> schedules = new ArrayList<>();
 
   @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<Invitation> invitations = new ArrayList<>();
 
   public void update(TripRequestDto requestDto) {

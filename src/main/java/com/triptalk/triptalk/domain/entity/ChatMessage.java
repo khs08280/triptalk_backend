@@ -42,6 +42,7 @@ public class ChatMessage {
   private LocalDateTime sentAt;
 
   @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<ChatMessageAttachment> attachments = new ArrayList<>();
 
 }
