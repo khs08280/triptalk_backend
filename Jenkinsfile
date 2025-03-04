@@ -8,7 +8,7 @@ pipeline {
         }
         stage('Test'){
             steps{
-                echo 'Testing...df' // 최소 하나의 스텝 추가
+                echo 'Testing...dfdf' // 최소 하나의 스텝 추가
             }
         }
         stage('Deploy'){
