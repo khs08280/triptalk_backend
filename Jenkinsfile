@@ -12,5 +12,6 @@ pipeline {
         stage('doker build'){
             steps{
             }
+        }
     }
 }
