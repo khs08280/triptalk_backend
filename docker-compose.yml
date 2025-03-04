@@ -21,7 +21,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/triptalk?serverTimezone=UTC&characterEncoding=UTF-8  # 중요: mysql 서비스 이름을 호스트로 사용
       - SPRING_DATASOURCE_USERNAME=spring_server
       - SPRING_DATASOURCE_PASSWORD=khs08280
-      - SOCKET_IO_KEYSTORE_PATH=/app/localhost.p12
       - SERVER_SSL_ENABLED=false
     restart: on-failure
     healthcheck:
