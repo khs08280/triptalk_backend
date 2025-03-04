@@ -1,6 +1,6 @@
 # Getting Started
 
-### Reference Documentation여기수정다시수정다시수정ff ffdfdff
+### Reference Documentation여기수정다시수정다시수정ff ffdfdffdf
 For further reference, please consider the following sections:
 
 * [Official Gradle documentation](https://docs.gradle.org)
