@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-            DOCKER_SERVER = '175.45.204.245'
             DOCKER_USER = 'jenkins-access'
+            DOCKER_SERVER = '175.45.204.245'
             DOCKER_PROJECT_PATH = '/home/ubuntu/triptalk'
 
             NCP_REGISTRY = 'triptalk-registry.kr.ncr.ntruss.com/triptalk-app:latest'
@@ -47,7 +47,7 @@ pipeline {
                         passwordVariable: 'NCP_REGISTRY_PASSWORD'
                     )]) {
                         sh '''
-                            ssh ${DOCKER_SERVER_USER}@${DOCKER_SERVER_HOST} << EOF
+                            ssh ${DOCKER_USER}@${DOCKER_SERVER} << EOF
                             cd ${DOCKER_PROJECT_PATH}
 
                             echo ${NCP_REGISTRY_PASSWORD} | docker login -u ${NCP_REGISTRY_USER} ${NCP_REGISTRY} --password-stdin
