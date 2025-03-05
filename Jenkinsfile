@@ -23,7 +23,7 @@ pipeline {
                         cd ${DOCKER_PROJECT_PATH}
                         docker compose down
                         git pull
-                        sh chmod +x gradlew
+                        chmod +x gradlew
                         ./gradlew clean build
                     '''
                 }
