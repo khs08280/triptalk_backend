@@ -20,7 +20,7 @@ pipeline {
                         ssh ${DOCKER_USER}@${DOCKER_SERVER} << EOF
                         cd ${DOCKER_PROJECT_PATH}
                         docker ps
-                    EOF
+                        EOF
                     """
                 }
             }
