@@ -6,7 +6,7 @@ pipeline {
             DOCKER_USER = 'jenkins-access'
             DOCKER_PROJECT_PATH = '/home/ubuntu/triptalk'
 
-            NCP_REGISTRY = 'triptalk-registry.kr.ncr.ntruss.com'
+            NCP_REGISTRY = 'triptalk-registry.kr.ncr.ntruss.com/triptalk-app:latest'
     }
 
     stages {
@@ -15,20 +15,12 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Build') {
+        stage('Build Project') {
             steps {
-                sshagent(credentials: ['docker-server-ssh-credentials']) {
-                    sh '''
-                        ssh ${DOCKER_USER}@${DOCKER_SERVER} << EOF
-                        cd ${DOCKER_PROJECT_PATH}
-                        docker compose down
-                        git pull
-                        ./gradlew clean build
-                    '''
-                }
+                sh './gradlew clean build'
             }
         }
-        stage('Docker Build And NCP Push') {
+        stage('NCP Push') {
             steps {
                 sshagent(credentials: ['docker-server-ssh-credentials']) {
                     withCredentials([usernamePassword(
@@ -37,13 +29,38 @@ pipeline {
                         passwordVariable: 'NCP_REGISTRY_PASSWORD'
                     )]){
                         sh '''
-                            ssh ${DOCKER_USER}@${DOCKER_SERVER} << EOF
+                            echo ${NCP_REGISTRY_PASSWORD} | docker login -u ${NCP_REGISTRY_USER} --password-stdin ${NCP_REGISTRY}
+
+                            docker build -t ${NCP_REGISTRY} .
+                            docker push ${NCP_REGISTRY}
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Deploy to Docker Server') {
+            steps {
+                sshagent(credentials: ['docker-server-ssh-credentials']) {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'ncp-registry-credentials',
+                        usernameVariable: 'NCP_REGISTRY_USER',
+                        passwordVariable: 'NCP_REGISTRY_PASSWORD'
+                    )]) {
+                        sh '''
+                            ssh ${DOCKER_SERVER_USER}@${DOCKER_SERVER_HOST} << EOF
                             cd ${DOCKER_PROJECT_PATH}
 
-                            docker compose up -d --build
+                            echo ${NCP_REGISTRY_PASSWORD} | docker login -u ${NCP_REGISTRY_USER} ${NCP_REGISTRY} --password-stdin
+
+                            docker pull ${NCP_REGISTRY}
+
+                            docker compose down
+                            docker compose up -d
+
                             docker image prune -f
                         '''
                     }
+
                 }
             }
         }
