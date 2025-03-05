@@ -1,7 +1,6 @@
-version: '3.8'
+version: '3'
 services:
   mysql:
-    image: mysql:8.0
     ports:
       - "3306:3306"
     environment:
@@ -13,7 +12,7 @@ services:
       - mysql-data:/var/lib/mysql
   app:
     build: .
-    image: gcr.kr/triptalk-registry/triptalk-app:latest
+    image: triptalk-registry.kr.ncr.ntruss.com/triptalk-app:latest
     ports:
       - "8080:8080"
     depends_on:

@@ -1,9 +1,28 @@
 pipeline {
     agent any
+
+    environment {
+            DOCKER_SERVER = '175.45.204.245'
+            DOCKER_USER = 'jenkins-access'
+            DOCKER_PROJECT_PATH = '/home/ubuntu/triptalk'
+    }
+
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                echo 'Building...'  // 최소 하나의 스텝 추가
+                checkout scm
+            }
+        }
+        stage('SSH into Docker Server') {
+            steps {
+                sshagent(credentials: ['docker-server-ssh-credentials']) {
+                    sh """
+                        ssh ${DOCKER_USER}@${DOCKER_SERVER} << EOF
+                        cd ${DOCKER_PROJECT_PATH}
+                        docker ps
+                    EOF
+                    """
+                }
             }
         }
         stage('Test'){
