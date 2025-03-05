@@ -17,10 +17,10 @@ pipeline {
             steps {
                 sshagent(credentials: ['docker-server-ssh-credentials']) {
                     sh '''
-                        bash -c ssh ${DOCKER_USER}@${DOCKER_SERVER} << 'EOF'
+                        ssh ${DOCKER_USER}@${DOCKER_SERVER} << EOF
                         cd ${DOCKER_PROJECT_PATH}
                         docker ps
-                        EOF'
+                    EOF
                     '''
                 }
             }
