@@ -28,7 +28,7 @@ pipeline {
                 }
             }
         }
-        stage('Build') {
+        stage('Docker Build And NCP Push') {
             steps {
                 sshagent(credentials: ['docker-server-ssh-credentials']) {
                     withCredentials([usernamePassword(
