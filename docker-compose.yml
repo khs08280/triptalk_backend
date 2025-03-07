@@ -1,6 +1,7 @@
 services:
-  db:
-    image: mysql
+  triptalk-db:
+    image: mysql:8.0
+    container_name: triptalk-db
     ports:
       - "3306:3306"
     environment:
@@ -10,25 +11,47 @@ services:
       MYSQL_PASSWORD: khs08280
     volumes:
       - mysql-data:/var/lib/mysql
-  app:
+    networks:
+      - app-network
+
+  triptalk-app:
     build: .
-    image: triptalk-registry.kr.ncr.ntruss.com/triptalk-app:latest
+#    image: triptalk-registry.kr.ncr.ntruss.com/triptalk-app:latest
+    container_name: triptalk-app
     ports:
       - "8080:8080"
     depends_on:
-      - mysql  # app 서비스가 mysql 서비스에 의존하도록 설정
+      - triptalk-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/triptalk?serverTimezone=UTC&characterEncoding=UTF-8  # 중요: mysql 서비스 이름을 호스트로 사용
+      - SPRING_DATASOURCE_URL=jdbc:mysql://triptalk-db:3306/triptalk?serverTimezone=UTC&characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=spring_server
       - SPRING_DATASOURCE_PASSWORD=khs08280
       - SERVER_SSL_ENABLED=false
     restart: on-failure
+    networks:
+      - app-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./letsencrypt:/etc/letsencrypt:ro
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+    depends_on:
+      - triptalk-app
+    networks:
+      - app-network
 
+networks:
+  app-network:
+    driver: bridge
 volumes:
   mysql-data:

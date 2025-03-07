@@ -31,8 +31,9 @@ public class SocketIOConfig {
     config.setHostname(host);
     config.setPort(port);
 
-    config.getAllowHeaders();
     config.setOrigin("https://triptalk1.netlify.app");
+    config.setContext("/socket.io/");
+    config.getAllowHeaders();
 
     config.setJsonSupport(new JacksonJsonSupport(new JavaTimeModule()));
     return new SocketIOServer(config);
