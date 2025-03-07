@@ -15,8 +15,8 @@ services:
       - app-network
 
   triptalk-app:
-    build: .
-#    image: triptalk-registry.kr.ncr.ntruss.com/triptalk-app:latest
+#    build: .
+    image: triptalk-registry.kr.ncr.ntruss.com/triptalk-app:latest
     container_name: triptalk-app
     ports:
       - "8080:8080"

@@ -56,7 +56,7 @@ pipeline {
                             docker pull ${NCP_REGISTRY}
 
                             docker compose down
-                            docker compose up -d --no-cache
+                            docker compose up -d
 
                             docker image prune -f
                         '''
